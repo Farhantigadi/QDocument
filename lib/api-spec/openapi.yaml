@@ -229,19 +229,23 @@ components:
           enum: [ACTIVE, SUSPENDED, DEACTIVATED]
     Document:
       type: object
-      required: [id, title, category, fileType, sizeBytes, uploadedAt, updatedAt, status]
+      required: [id, title, category, sourceType, uploadedAt, updatedAt, status]
       properties:
         id: { type: string }
         title: { type: string }
         category: { type: string }
+        sourceType:
+          type: string
+          enum: [upload, link]
         tags:
           type: array
           items: { type: string }
         notes: { type: string }
         fileType:
-          type: string
+          type: ["string", "null"]
           enum: [pdf, png, jpg, webp]
-        sizeBytes: { type: integer }
+        sizeBytes: { type: ["integer", "null"] }
+        sourceUrl: { type: ["string", "null"], format: uri }
         uploadedAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
         status:
@@ -250,10 +254,13 @@ components:
         thumbnailUrl: { type: ["string", "null"], format: uri }
     DocumentInput:
       type: object
-      required: [title, category, fileType, sizeBytes]
+      required: [title, category, sourceType]
       properties:
         title: { type: string, minLength: 1, maxLength: 120 }
         category: { type: string, minLength: 1, maxLength: 40 }
+        sourceType:
+          type: string
+          enum: [upload, link]
         tags:
           type: array
           items: { type: string, maxLength: 40 }
@@ -262,6 +269,7 @@ components:
           type: string
           enum: [pdf, png, jpg, webp]
         sizeBytes: { type: integer, minimum: 1, maximum: 15728640 }
+        sourceUrl: { type: string, format: uri, maxLength: 2048 }
     DocumentUpdate:
       type: object
       properties:

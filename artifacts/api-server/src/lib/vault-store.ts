@@ -12,10 +12,12 @@ export type VaultDocument = {
   id: string;
   title: string;
   category: string;
+  sourceType: "upload" | "link";
   tags: string[];
   notes: string;
-  fileType: "pdf" | "png" | "jpg" | "webp";
-  sizeBytes: number;
+  fileType: "pdf" | "png" | "jpg" | "webp" | null;
+  sizeBytes: number | null;
+  sourceUrl: string | null;
   uploadedAt: string;
   updatedAt: string;
   status: "active" | "deleted";
@@ -46,10 +48,12 @@ export const documents: VaultDocument[] = [
     id: "doc_passport",
     title: "Passport scan",
     category: "Identity",
+    sourceType: "upload",
     tags: ["travel", "identity"],
     notes: "Current passport scan. Keep private.",
     fileType: "pdf",
     sizeBytes: 2_400_000,
+    sourceUrl: null,
     uploadedAt: iso(42),
     updatedAt: iso(42),
     status: "active",
@@ -59,10 +63,12 @@ export const documents: VaultDocument[] = [
     id: "doc_insurance",
     title: "Health insurance policy",
     category: "Medical",
+    sourceType: "upload",
     tags: ["insurance", "health"],
     notes: "Policy documents and member details.",
     fileType: "pdf",
     sizeBytes: 4_800_000,
+    sourceUrl: null,
     uploadedAt: iso(1_440),
     updatedAt: iso(1_440),
     status: "active",
@@ -72,10 +78,12 @@ export const documents: VaultDocument[] = [
     id: "doc_lease",
     title: "Apartment lease",
     category: "Contracts",
+    sourceType: "upload",
     tags: ["home", "lease"],
     notes: "Signed lease agreement.",
     fileType: "pdf",
     sizeBytes: 1_200_000,
+    sourceUrl: null,
     uploadedAt: iso(2_880),
     updatedAt: iso(2_880),
     status: "active",
@@ -85,10 +93,12 @@ export const documents: VaultDocument[] = [
     id: "doc_transcript",
     title: "University transcript",
     category: "Academic",
+    sourceType: "upload",
     tags: ["education"],
     notes: "Official transcript.",
     fileType: "png",
     sizeBytes: 980_000,
+    sourceUrl: null,
     uploadedAt: iso(5_040),
     updatedAt: iso(5_040),
     status: "active",
@@ -144,5 +154,5 @@ export function findDocument(id: string) {
 export function bytesUsed() {
   return documents
     .filter((document) => document.status === "active")
-    .reduce((total, document) => total + document.sizeBytes, 0);
+    .reduce((total, document) => total + (document.sizeBytes ?? 0), 0);
 }

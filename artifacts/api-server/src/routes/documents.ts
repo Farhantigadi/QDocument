@@ -31,7 +31,7 @@ router.get("/documents", (req, res) => {
     .filter((document) => !category || document.category === category)
     .sort((left, right) => {
       if (sort === "name") return left.title.localeCompare(right.title);
-      if (sort === "size") return right.sizeBytes - left.sizeBytes;
+      if (sort === "size") return (right.sizeBytes ?? 0) - (left.sizeBytes ?? 0);
       return right.updatedAt.localeCompare(left.updatedAt);
     });
 
@@ -40,15 +40,25 @@ router.get("/documents", (req, res) => {
 
 router.post("/documents", (req, res) => {
   const input = CreateDocumentBody.parse(req.body);
+  if (input.sourceType === "upload" && (!input.fileType || !input.sizeBytes)) {
+    res.status(400).json({ error: "Uploaded documents require a file." });
+    return;
+  }
+  if (input.sourceType === "link" && !input.sourceUrl) {
+    res.status(400).json({ error: "Linked documents require a URL." });
+    return;
+  }
   const timestamp = new Date().toISOString();
   const document: VaultDocument = {
     id: crypto.randomUUID(),
     title: input.title,
     category: input.category,
+    sourceType: input.sourceType,
     tags: input.tags ?? [],
     notes: input.notes ?? "",
-    fileType: input.fileType,
-    sizeBytes: input.sizeBytes,
+    fileType: input.fileType ?? null,
+    sizeBytes: input.sizeBytes ?? null,
+    sourceUrl: input.sourceUrl ?? null,
     uploadedAt: timestamp,
     updatedAt: timestamp,
     status: "active",
