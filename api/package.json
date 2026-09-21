@@ -1,0 +1,16 @@
+{
+  "name": "@workspace/api",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "formidable": "^3.5.2",
+    "googleapis": "^144.0.0",
+    "jose": "^5.9.6"
+  },
+  "devDependencies": {
+    "@types/formidable": "^3.4.5",
+    "@types/node": "catalog:",
+    "@vercel/node": "^5.1.8",
+    "typescript": "~5.9.3"
+  }
+}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, CalendarDays, Check, FileImage, FileText, MoreHorizontal, Pencil, Save, ShieldCheck, Trash2 } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Check, FileImage, FileText, Link2, MoreHorizontal, Pencil, Save, ShieldCheck, Trash2 } from 'lucide-react';
 import { Link, useLocation, useParams } from 'wouter';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -14,7 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { LoadingRows, formatBytes, formatDate, QueryState } from '@/components/vault-ui';
+import { DeleteConfirmDialog, LoadingRows, formatBytes, formatDate, QueryState } from '@/components/vault-ui';
 
 export default function DocumentDetail() {
   const { id = '' } = useParams<{ id: string }>();
@@ -29,6 +29,7 @@ export default function DocumentDetail() {
   const [tags, setTags] = useState('');
   const [notes, setNotes] = useState('');
   const [notice, setNotice] = useState('');
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   useEffect(() => {
     if (documentQuery.data) {
@@ -59,7 +60,6 @@ export default function DocumentDetail() {
   };
 
   const remove = () => {
-    if (!window.confirm('Remove this document from your vault?')) return;
     deleteDocument.mutate({ documentId: id }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListDocumentsQueryKey() });
@@ -79,12 +79,28 @@ export default function DocumentDetail() {
         <section>
           <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
             <div><p className="eyebrow text-accent">{document.category} / {document.fileType}</p><h1 className="display mt-2 max-w-2xl text-4xl leading-tight sm:text-5xl" data-testid="heading-document-title">{document.title}</h1><p className="mt-3 text-sm text-muted-foreground">Updated {formatDate(document.updatedAt, true)}</p></div>
-            <div className="flex gap-2"><Button variant="outline" onClick={() => setEditing((value) => !value)} data-testid="button-edit-document"><Pencil className="h-4 w-4" /> {editing ? 'Close edit' : 'Edit'}</Button><Button variant="outline" className="text-destructive hover:text-destructive" onClick={remove} disabled={deleteDocument.isPending} data-testid="button-delete-document"><Trash2 className="h-4 w-4" /></Button></div>
+            <div className="flex gap-2"><Button variant="outline" onClick={() => setEditing((value) => !value)} data-testid="button-edit-document"><Pencil className="h-4 w-4" /> {editing ? 'Close edit' : 'Edit'}</Button><Button variant="outline" className="text-destructive hover:text-destructive" onClick={() => setDeleteOpen(true)} disabled={deleteDocument.isPending} data-testid="button-delete-document"><Trash2 className="h-4 w-4" /></Button></div>
           </div>
           {notice && <div className="mt-5 flex items-center gap-2 rounded-xl bg-secondary px-3 py-2 text-sm text-primary" data-testid="status-document-notice"><Check className="h-4 w-4" /> {notice}</div>}
           <div className="paper-grid mt-8 flex min-h-[390px] items-center justify-center overflow-hidden rounded-2xl border border-border bg-card p-5 sm:min-h-[510px]">
-            {document.thumbnailUrl ? <img src={document.thumbnailUrl} alt={`Preview of ${document.title}`} className="max-h-[470px] max-w-full rounded-lg object-contain shadow-[var(--shadow-lg)]" data-testid="img-document-preview" /> : <div className="w-full max-w-sm rounded-xl border border-border bg-background p-7 text-center shadow-[var(--shadow-sm)]" data-testid="empty-document-preview"><div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary text-primary">{document.fileType === 'pdf' ? <FileText className="h-7 w-7" /> : <FileImage className="h-7 w-7" />}</div><p className="mt-5 font-semibold">Preview unavailable</p><p className="mt-2 text-sm leading-6 text-muted-foreground">The metadata is safely filed. A visual preview will appear when the secure file transfer is connected.</p></div>}
+            {document.sourceType === 'link' && document.sourceUrl ? (
+              <div className="w-full max-w-sm rounded-xl border border-border bg-background p-7 text-center shadow-[var(--shadow-sm)]" data-testid="empty-document-preview">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary text-primary"><Link2 className="h-7 w-7" /></div>
+                <p className="mt-5 font-semibold">Linked document</p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">This document lives in your Google Drive.</p>
+                <a href={document.sourceUrl} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90">Open in Drive</a>
+              </div>
+            ) : document.thumbnailUrl ? (
+              <img src={document.thumbnailUrl} alt={`Preview of ${document.title}`} className="max-h-[470px] max-w-full rounded-lg object-contain shadow-[var(--shadow-lg)]" data-testid="img-document-preview" />
+            ) : (
+              <div className="w-full max-w-sm rounded-xl border border-border bg-background p-7 text-center shadow-[var(--shadow-sm)]" data-testid="empty-document-preview">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary text-primary">{document.fileType === 'pdf' ? <FileText className="h-7 w-7" /> : <FileImage className="h-7 w-7" />}</div>
+                <p className="mt-5 font-semibold">Stored in your Drive</p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">This file is safely saved in your Haven Vault folder on Google Drive.</p>
+              </div>
+            )}
           </div>
+          <DeleteConfirmDialog open={deleteOpen} onOpenChange={setDeleteOpen} onConfirm={remove} isPending={deleteDocument.isPending} title={document.title} />
         </section>
         <aside className="space-y-5">
           {editing ? <form className="vault-card rounded-2xl p-5" onSubmit={save} data-testid="form-edit-document"><div className="mb-5 flex items-center justify-between"><div><p className="eyebrow text-accent">Edit details</p><h2 className="mt-1 text-lg font-semibold">Keep it useful</h2></div><Save className="h-4 w-4 text-muted-foreground" /></div><div className="space-y-4"><label className="block space-y-1.5 text-sm font-medium">Title<Input data-testid="input-edit-title" value={title} onChange={(event) => setTitle(event.target.value)} /></label><label className="block space-y-1.5 text-sm font-medium">Category<Input data-testid="input-edit-category" value={category} onChange={(event) => setCategory(event.target.value)} /></label><label className="block space-y-1.5 text-sm font-medium">Tags<Input data-testid="input-edit-tags" value={tags} onChange={(event) => setTags(event.target.value)} /></label><label className="block space-y-1.5 text-sm font-medium">Notes<Textarea data-testid="input-edit-notes" value={notes} onChange={(event) => setNotes(event.target.value)} /></label><Button className="w-full" type="submit" disabled={updateDocument.isPending} data-testid="button-save-edit">{updateDocument.isPending ? 'Saving…' : 'Save changes'}</Button></div></form> : <section className="vault-card rounded-2xl p-5" data-testid="panel-document-details"><div className="flex items-center justify-between"><div><p className="eyebrow text-accent">Details</p><h2 className="mt-1 text-lg font-semibold">A little context</h2></div><MoreHorizontal className="h-4 w-4 text-muted-foreground" /></div><dl className="mt-6 space-y-4 text-sm"><div className="flex items-start justify-between gap-4"><dt className="text-muted-foreground">File size</dt><dd className="mono text-right" data-testid="text-document-size">{formatBytes(document.sizeBytes)}</dd></div><div className="flex items-start justify-between gap-4"><dt className="text-muted-foreground">Added</dt><dd className="text-right" data-testid="text-document-uploaded">{formatDate(document.uploadedAt)}</dd></div><div className="flex items-start justify-between gap-4"><dt className="text-muted-foreground">Last updated</dt><dd className="text-right" data-testid="text-document-updated">{formatDate(document.updatedAt)}</dd></div><div className="flex items-start justify-between gap-4"><dt className="text-muted-foreground">Status</dt><dd className="flex items-center gap-1.5 text-right text-accent" data-testid="status-document"><span className="h-1.5 w-1.5 rounded-full bg-accent" /> {document.status}</dd></div></dl></section>}

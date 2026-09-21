@@ -30,6 +30,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  picture?: string;
   role: UserRole;
   status: UserStatus;
 }
@@ -57,14 +58,26 @@ export const DocumentStatus = {
   deleted: 'deleted',
 } as const;
 
+export type DocumentSourceType = typeof DocumentSourceType[keyof typeof DocumentSourceType];
+
+
+export const DocumentSourceType = {
+  upload: 'upload',
+  link: 'link',
+} as const;
+
 export interface Document {
   id: string;
   title: string;
   category: string;
+  sourceType: DocumentSourceType;
+  driveFileId?: string | null;
   tags?: string[];
   notes?: string;
-  fileType: DocumentFileType;
-  sizeBytes: number;
+  fileType?: DocumentFileType | null;
+  sizeBytes?: number | null;
+  /** @nullable */
+  sourceUrl?: string | null;
   uploadedAt: string;
   updatedAt: string;
   status: DocumentStatus;

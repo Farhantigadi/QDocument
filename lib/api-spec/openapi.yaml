@@ -221,6 +221,7 @@ components:
         id: { type: string }
         name: { type: string }
         email: { type: string, format: email }
+        picture: { type: string }
         role:
           type: string
           enum: [USER, ADMIN]
@@ -237,6 +238,7 @@ components:
         sourceType:
           type: string
           enum: [upload, link]
+        driveFileId: { type: ["string", "null"] }
         tags:
           type: array
           items: { type: string }

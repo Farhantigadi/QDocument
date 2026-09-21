@@ -1,0 +1,18 @@
+{
+  "buildCommand": "pnpm --filter @workspace/document-vault run build",
+  "outputDirectory": "artifacts/document-vault/dist",
+  "functions": {
+    "api/**/*.ts": { "runtime": "@vercel/node" }
+  },
+  "rewrites": [
+    { "source": "/api/auth/login", "destination": "/api/auth/login" },
+    { "source": "/api/auth/callback", "destination": "/api/auth/callback" },
+    { "source": "/api/auth/session", "destination": "/api/auth/session" },
+    { "source": "/api/auth/logout", "destination": "/api/auth/logout" },
+    { "source": "/api/documents", "destination": "/api/documents/index" },
+    { "source": "/api/documents/:documentId", "destination": "/api/documents/[documentId]/index" },
+    { "source": "/api/dashboard/summary", "destination": "/api/dashboard/index" },
+    { "source": "/api/dashboard/activity", "destination": "/api/dashboard/index" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
