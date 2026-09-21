@@ -1,6 +1,6 @@
-# [Project name]
+# Personal Document Vault
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Haven Vault is a privacy-first workspace for organizing, finding, previewing, and managing personal documents.
 
 ## Run & Operate
 
@@ -19,26 +19,42 @@ _Replace the heading above with the project's name, and this line with one sente
 - Validation: Zod (`zod/v4`), `drizzle-zod`
 - API codegen: Orval (from OpenAPI spec)
 - Build: esbuild (CJS bundle)
+- Web: React + Vite + Wouter + Tailwind CSS + shadcn-style primitives
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/document-vault/src/` — Haven Vault web app, routes, shell, and UI
+- `artifacts/api-server/src/routes/` — API route handlers
+- `artifacts/api-server/src/lib/vault-store.ts` — development vault data store
+- `lib/api-spec/openapi.yaml` — source-of-truth API contract
+- `lib/api-client-react/src/generated/` — generated React Query client
+- `lib/api-zod/src/generated/` — generated server validation schemas
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Sessions are intentionally persistent until explicit logout or server-side revocation; the browser cookie is HttpOnly, Secure in production, SameSite=Strict, and long-lived.
+- The API contract is OpenAPI-first; generated React Query hooks and Zod schemas are used by the web and server layers.
+- Documents are private by default and all document operations are scoped to the current user boundary before storage access is added.
+- The first working build uses a small in-memory development store so the complete product flow is visible while managed auth, database, and object storage are connected.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Persistent sign-in and logout flow
+- Overview dashboard with storage summary, category map, and recent activity
+- Searchable, sortable document workspace
+- Document detail view with metadata editing and soft delete
+- Account, session, privacy, and storage settings
+- Privacy-safe admin overview and user quota/status table
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- The user explicitly requested indefinite sessions that persist until logout.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Run `pnpm --filter @workspace/api-spec run codegen` after changing `lib/api-spec/openapi.yaml`.
+- The generated client expects the API at `/api`; use the shared proxy for local verification.
+- The development store is not durable or multi-user; replace it with PostgreSQL and authenticated storage before production use.
 
 ## Pointers
 

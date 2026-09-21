@@ -10,6 +10,14 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Persistent session operations
+  - name: documents
+    description: User-owned document operations
+  - name: dashboard
+    description: Dashboard summaries and activity
+  - name: admin
+    description: Administrator operations
 paths:
   /healthz:
     get:
@@ -24,7 +32,173 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /auth/session:
+    get:
+      operationId: getSession
+      tags: [auth]
+      summary: Get the current persistent session
+      responses:
+        "200":
+          description: Current session state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Revoke the current session
+      responses:
+        "204":
+          description: Session revoked
+  /documents:
+    get:
+      operationId: listDocuments
+      tags: [documents]
+      summary: List documents owned by the current user
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+        - in: query
+          name: category
+          schema: { type: string }
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [recent, name, size]
+            default: recent
+      responses:
+        "200":
+          description: User-owned documents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Document"
+    post:
+      operationId: createDocument
+      tags: [documents]
+      summary: Create document metadata and request a secure upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentInput"
+      responses:
+        "201":
+          description: Created document
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+  /documents/{documentId}:
+    get:
+      operationId: getDocument
+      tags: [documents]
+      summary: Get one document owned by the current user
+      parameters:
+        - $ref: "#/components/parameters/DocumentId"
+      responses:
+        "200":
+          description: Document metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        "404":
+          description: Document not found
+    patch:
+      operationId: updateDocument
+      tags: [documents]
+      summary: Update document metadata
+      parameters:
+        - $ref: "#/components/parameters/DocumentId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentUpdate"
+      responses:
+        "200":
+          description: Updated document
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+    delete:
+      operationId: deleteDocument
+      tags: [documents]
+      summary: Soft-delete a document
+      parameters:
+        - $ref: "#/components/parameters/DocumentId"
+      responses:
+        "204":
+          description: Document deleted
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get storage and category summary for the current user
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+  /dashboard/activity:
+    get:
+      operationId: listActivity
+      tags: [dashboard]
+      summary: List recent account activity
+      responses:
+        "200":
+          description: Recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Activity"
+  /admin/overview:
+    get:
+      operationId: getAdminOverview
+      tags: [admin]
+      summary: Get privacy-safe administrator overview metrics
+      responses:
+        "200":
+          description: Admin overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOverview"
+  /admin/users:
+    get:
+      operationId: listUsers
+      tags: [admin]
+      summary: List user account status and quota metadata
+      responses:
+        "200":
+          description: User summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserSummary"
 components:
+  parameters:
+    DocumentId:
+      name: documentId
+      in: path
+      required: true
+      schema: { type: string }
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +207,116 @@ components:
           type: string
       required:
         - status
+    Session:
+      type: object
+      required: [authenticated, user]
+      properties:
+        authenticated: { type: boolean }
+        user:
+          $ref: "#/components/schemas/User"
+    User:
+      type: object
+      required: [id, name, email, role, status]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        role:
+          type: string
+          enum: [USER, ADMIN]
+        status:
+          type: string
+          enum: [ACTIVE, SUSPENDED, DEACTIVATED]
+    Document:
+      type: object
+      required: [id, title, category, fileType, sizeBytes, uploadedAt, updatedAt, status]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        category: { type: string }
+        tags:
+          type: array
+          items: { type: string }
+        notes: { type: string }
+        fileType:
+          type: string
+          enum: [pdf, png, jpg, webp]
+        sizeBytes: { type: integer }
+        uploadedAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        status:
+          type: string
+          enum: [active, deleted]
+        thumbnailUrl: { type: ["string", "null"], format: uri }
+    DocumentInput:
+      type: object
+      required: [title, category, fileType, sizeBytes]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 120 }
+        category: { type: string, minLength: 1, maxLength: 40 }
+        tags:
+          type: array
+          items: { type: string, maxLength: 40 }
+        notes: { type: string, maxLength: 2000 }
+        fileType:
+          type: string
+          enum: [pdf, png, jpg, webp]
+        sizeBytes: { type: integer, minimum: 1, maximum: 15728640 }
+    DocumentUpdate:
+      type: object
+      properties:
+        title: { type: string, minLength: 1, maxLength: 120 }
+        category: { type: string, minLength: 1, maxLength: 40 }
+        tags:
+          type: array
+          items: { type: string, maxLength: 40 }
+        notes: { type: string, maxLength: 2000 }
+    DashboardSummary:
+      type: object
+      required: [documentCount, storageUsedBytes, storageLimitBytes, categories]
+      properties:
+        documentCount: { type: integer }
+        storageUsedBytes: { type: integer }
+        storageLimitBytes: { type: integer }
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryCount"
+    CategoryCount:
+      type: object
+      required: [category, count]
+      properties:
+        category: { type: string }
+        count: { type: integer }
+    Activity:
+      type: object
+      required: [id, action, label, createdAt]
+      properties:
+        id: { type: string }
+        action:
+          type: string
+          enum: [uploaded, viewed, updated, deleted, login]
+        label: { type: string }
+        createdAt: { type: string, format: date-time }
+    AdminOverview:
+      type: object
+      required: [userCount, documentCount, storageUsedBytes, auditEventCount]
+      properties:
+        userCount: { type: integer }
+        documentCount: { type: integer }
+        storageUsedBytes: { type: integer }
+        auditEventCount: { type: integer }
+    UserSummary:
+      type: object
+      required: [id, name, email, status, documentCount, storageUsedBytes, storageLimitBytes]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        status:
+          type: string
+          enum: [ACTIVE, SUSPENDED, DEACTIVATED]
+        documentCount: { type: integer }
+        storageUsedBytes: { type: integer }
+        storageLimitBytes: { type: integer }
 

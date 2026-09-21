@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Personal Document Vault"
+description = "A secure, calm workspace for storing, finding, previewing, and managing personal documents with persistent sessions and privacy-first access controls."
+version = "1.0.0"
+id = "artifacts/document-vault"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23540
+
+[services.development]
+run = "pnpm --filter @workspace/document-vault run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/document-vault", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/document-vault/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23540"
+BASE_PATH = "/"
