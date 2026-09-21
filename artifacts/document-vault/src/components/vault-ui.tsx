@@ -5,6 +5,7 @@ import {
   ArrowUpRight,
   BookOpen,
   Check,
+  FileUp,
   FileArchive,
   FileImage,
   FileText,
@@ -160,31 +161,55 @@ export function DocumentDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   const [category, setCategory] = useState('');
   const [tags, setTags] = useState('');
   const [notes, setNotes] = useState('');
-  const [fileType, setFileType] = useState<DocumentInputFileType>('pdf');
-  const [sizeBytes, setSizeBytes] = useState('1');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState('');
+
+  const maxFileSize = 15 * 1024 * 1024;
+  const supportedTypes: Record<string, DocumentInputFileType> = {
+    'application/pdf': 'pdf',
+    'image/png': 'png',
+    'image/jpeg': 'jpg',
+    'image/webp': 'webp',
+  };
 
   const reset = () => {
     setTitle('');
     setCategory('');
     setTags('');
     setNotes('');
-    setFileType('pdf');
-    setSizeBytes('1');
+    setSelectedFile(null);
     setError('');
+  };
+
+  const handleFile = (file: File | undefined) => {
+    if (!file) return;
+    const fileType = supportedTypes[file.type];
+    if (!fileType) {
+      setError('Choose a PDF, PNG, JPG, or WEBP file.');
+      return;
+    }
+    if (file.size > maxFileSize) {
+      setError('Files must be 15 MB or smaller.');
+      return;
+    }
+    setSelectedFile(file);
+    setError('');
+    if (!title.trim()) {
+      setTitle(file.name.replace(/\.[^/.]+$/, '').replace(/[-_]+/g, ' '));
+    }
   };
 
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
+    if (!selectedFile) {
+      setError('Choose a file before saving it to your vault.');
+      return;
+    }
     if (!title.trim() || !category.trim()) {
       setError('A title and category are needed before this can be filed.');
       return;
     }
-    const bytes = Number(sizeBytes);
-    if (!Number.isFinite(bytes) || bytes < 1) {
-      setError('Enter a file size greater than zero.');
-      return;
-    }
+    const fileType = supportedTypes[selectedFile.type];
     setError('');
     createDocument.mutate(
       {
@@ -194,7 +219,7 @@ export function DocumentDialog({ open, onOpenChange }: { open: boolean; onOpenCh
           tags: tags.split(',').map((tag) => tag.trim()).filter(Boolean),
           notes: notes.trim() || undefined,
           fileType,
-          sizeBytes: Math.round(bytes),
+          sizeBytes: selectedFile.size,
         },
       },
       {
@@ -216,25 +241,45 @@ export function DocumentDialog({ open, onOpenChange }: { open: boolean; onOpenCh
         <DialogHeader>
           <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-secondary text-primary"><UploadCloud className="h-5 w-5" /></div>
           <DialogTitle className="display text-2xl">Add to your vault</DialogTitle>
-          <DialogDescription>Save the details now. The secure file transfer can follow when your connection is ready.</DialogDescription>
+          <DialogDescription>Choose a file first, then add the details that will help you find it later.</DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4" data-testid="form-create-document">
+          <label
+            className="group block cursor-pointer rounded-2xl border border-dashed border-border bg-background/60 p-5 transition-colors hover:border-accent hover:bg-secondary/40"
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={(event) => {
+              event.preventDefault();
+              handleFile(event.dataTransfer.files[0]);
+            }}
+            data-testid="dropzone-document-file"
+          >
+            <input
+              className="sr-only"
+              type="file"
+              accept=".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/png,image/jpeg,image/webp"
+              onChange={(event) => handleFile(event.target.files?.[0])}
+              data-testid="input-document-file"
+            />
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary transition-transform group-hover:-translate-y-0.5">
+                {selectedFile ? <Check className="h-5 w-5" /> : <FileUp className="h-5 w-5" />}
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold" data-testid="text-selected-file">
+                  {selectedFile ? selectedFile.name : 'Drop a file here or browse'}
+                </p>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  {selectedFile ? `${selectedFile.type.split('/')[1]?.toUpperCase()} · ${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB` : 'PDF, PNG, JPG, or WEBP · up to 15 MB'}
+                </p>
+              </div>
+            </div>
+          </label>
           <div className="grid gap-4 sm:grid-cols-[1.5fr_.8fr]">
             <label className="space-y-1.5 text-sm font-medium">Document title
               <Input data-testid="input-document-title" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="e.g. Passport renewal" />
             </label>
             <label className="space-y-1.5 text-sm font-medium">Category
               <Input data-testid="input-document-category" value={category} onChange={(event) => setCategory(event.target.value)} placeholder="Identity" />
-            </label>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-[1fr_1fr]">
-            <label className="space-y-1.5 text-sm font-medium">File type
-              <select className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring" data-testid="select-document-type" value={fileType} onChange={(event) => setFileType(event.target.value as DocumentInputFileType)}>
-                <option value="pdf">PDF</option><option value="png">PNG</option><option value="jpg">JPG</option><option value="webp">WEBP</option>
-              </select>
-            </label>
-            <label className="space-y-1.5 text-sm font-medium">Size in bytes
-              <Input data-testid="input-document-size" type="number" min="1" value={sizeBytes} onChange={(event) => setSizeBytes(event.target.value)} />
             </label>
           </div>
           <label className="block space-y-1.5 text-sm font-medium">Tags <span className="font-normal text-muted-foreground">comma separated</span>
