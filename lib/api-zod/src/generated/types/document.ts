@@ -6,16 +6,26 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { DocumentFileType } from './documentFileType';
+import type { DocumentSourceType } from './documentSourceType';
 import type { DocumentStatus } from './documentStatus';
 
 export interface Document {
   id: string;
   title: string;
   category: string;
+  sourceType: DocumentSourceType;
+  /** @nullable */
+  objectPath?: string | null;
+  /** @nullable */
+  driveFileId?: string | null;
   tags?: string[];
   notes?: string;
-  fileType: DocumentFileType;
-  sizeBytes: number;
+  /** @nullable */
+  fileType?: DocumentFileType;
+  /** @nullable */
+  sizeBytes?: number | null;
+  /** @nullable */
+  sourceUrl?: string | null;
   uploadedAt: Date;
   updatedAt: Date;
   status: DocumentStatus;

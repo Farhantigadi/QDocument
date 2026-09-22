@@ -26,6 +26,7 @@ export const GetSessionResponse = zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "email": zod.string().email(),
+  "picture": zod.string().optional(),
   "role": zod.enum(['USER', 'ADMIN']),
   "status": zod.enum(['ACTIVE', 'SUSPENDED', 'DEACTIVATED'])
 })
@@ -53,10 +54,14 @@ export const ListDocumentsResponseItem = zod.object({
   "id": zod.string(),
   "title": zod.string(),
   "category": zod.string(),
+  "sourceType": zod.enum(['upload', 'link']),
+  "objectPath": zod.string().nullish(),
+  "driveFileId": zod.string().nullish(),
   "tags": zod.array(zod.string()).optional(),
   "notes": zod.string().optional(),
-  "fileType": zod.enum(['pdf', 'png', 'jpg', 'webp']),
-  "sizeBytes": zod.number().int(),
+  "fileType": zod.enum(['pdf', 'png', 'jpg', 'webp']).nullish(),
+  "sizeBytes": zod.number().int().nullish(),
+  "sourceUrl": zod.string().url().nullish(),
   "uploadedAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date(),
   "status": zod.enum(['active', 'deleted']),
@@ -78,30 +83,85 @@ export const createDocumentBodyNotesMax = 2000;
 
 export const createDocumentBodySizeBytesMax = 15728640;
 
+export const createDocumentBodySourceUrlMax = 2048;
+
+export const createDocumentBodyObjectPathMax = 512;
+
 
 
 export const CreateDocumentBody = zod.object({
   "title": zod.string().min(1).max(createDocumentBodyTitleMax),
   "category": zod.string().min(1).max(createDocumentBodyCategoryMax),
+  "sourceType": zod.enum(['upload', 'link']),
   "tags": zod.array(zod.string().max(createDocumentBodyTagsItemMax)).optional(),
   "notes": zod.string().max(createDocumentBodyNotesMax).optional(),
-  "fileType": zod.enum(['pdf', 'png', 'jpg', 'webp']),
-  "sizeBytes": zod.number().int().min(1).max(createDocumentBodySizeBytesMax)
+  "fileType": zod.enum(['pdf', 'png', 'jpg', 'webp']).optional(),
+  "sizeBytes": zod.number().int().min(1).max(createDocumentBodySizeBytesMax).optional(),
+  "sourceUrl": zod.string().url().max(createDocumentBodySourceUrlMax).optional(),
+  "objectPath": zod.string().max(createDocumentBodyObjectPathMax).optional()
 })
 
 export const CreateDocumentResponse = zod.object({
   "id": zod.string(),
   "title": zod.string(),
   "category": zod.string(),
+  "sourceType": zod.enum(['upload', 'link']),
+  "objectPath": zod.string().nullish(),
+  "driveFileId": zod.string().nullish(),
   "tags": zod.array(zod.string()).optional(),
   "notes": zod.string().optional(),
-  "fileType": zod.enum(['pdf', 'png', 'jpg', 'webp']),
-  "sizeBytes": zod.number().int(),
+  "fileType": zod.enum(['pdf', 'png', 'jpg', 'webp']).nullish(),
+  "sizeBytes": zod.number().int().nullish(),
+  "sourceUrl": zod.string().url().nullish(),
   "uploadedAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date(),
   "status": zod.enum(['active', 'deleted']),
   "thumbnailUrl": zod.string().url().nullish()
 })
+
+
+/**
+ * @summary Request a presigned URL for a private file upload
+ */
+export const requestUploadUrlBodyNameMax = 255;
+
+export const requestUploadUrlBodySizeMax = 15728640;
+
+
+
+
+export const RequestUploadUrlBody = zod.object({
+  "name": zod.string().min(1).max(requestUploadUrlBodyNameMax),
+  "size": zod.number().int().min(1).max(requestUploadUrlBodySizeMax),
+  "contentType": zod.string().min(1)
+})
+
+export const requestUploadUrlResponseMetadataNameMax = 255;
+
+export const requestUploadUrlResponseMetadataSizeMax = 15728640;
+
+
+
+
+export const RequestUploadUrlResponse = zod.object({
+  "uploadURL": zod.string().url(),
+  "objectPath": zod.string(),
+  "metadata": zod.object({
+  "name": zod.string().min(1).max(requestUploadUrlResponseMetadataNameMax),
+  "size": zod.number().int().min(1).max(requestUploadUrlResponseMetadataSizeMax),
+  "contentType": zod.string().min(1)
+}).optional()
+})
+
+
+/**
+ * @summary Serve a private uploaded object
+ */
+export const GetStorageObjectParams = zod.object({
+  "objectPath": zod.coerce.string()
+})
+
+export const GetStorageObjectResponse = zod.unknown()
 
 
 /**
@@ -115,10 +175,14 @@ export const GetDocumentResponse = zod.object({
   "id": zod.string(),
   "title": zod.string(),
   "category": zod.string(),
+  "sourceType": zod.enum(['upload', 'link']),
+  "objectPath": zod.string().nullish(),
+  "driveFileId": zod.string().nullish(),
   "tags": zod.array(zod.string()).optional(),
   "notes": zod.string().optional(),
-  "fileType": zod.enum(['pdf', 'png', 'jpg', 'webp']),
-  "sizeBytes": zod.number().int(),
+  "fileType": zod.enum(['pdf', 'png', 'jpg', 'webp']).nullish(),
+  "sizeBytes": zod.number().int().nullish(),
+  "sourceUrl": zod.string().url().nullish(),
   "uploadedAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date(),
   "status": zod.enum(['active', 'deleted']),
@@ -154,10 +218,14 @@ export const UpdateDocumentResponse = zod.object({
   "id": zod.string(),
   "title": zod.string(),
   "category": zod.string(),
+  "sourceType": zod.enum(['upload', 'link']),
+  "objectPath": zod.string().nullish(),
+  "driveFileId": zod.string().nullish(),
   "tags": zod.array(zod.string()).optional(),
   "notes": zod.string().optional(),
-  "fileType": zod.enum(['pdf', 'png', 'jpg', 'webp']),
-  "sizeBytes": zod.number().int(),
+  "fileType": zod.enum(['pdf', 'png', 'jpg', 'webp']).nullish(),
+  "sizeBytes": zod.number().int().nullish(),
+  "sourceUrl": zod.string().url().nullish(),
   "uploadedAt": zod.coerce.date(),
   "updatedAt": zod.coerce.date(),
   "status": zod.enum(['active', 'deleted']),

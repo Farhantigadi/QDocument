@@ -24,11 +24,11 @@ export default function Login() {
               <span className="display text-2xl">Haven</span>
             </div>
             <div className="mt-auto max-w-sm">
-              <p className="eyebrow text-sidebar-primary">Your documents, your Drive</p>
+              <p className="eyebrow text-sidebar-primary">Your documents, your space</p>
               <h1 className="display mt-5 text-5xl leading-[1.04]">Everything important, in one quiet place.</h1>
-              <p className="mt-6 text-sm leading-7 text-primary-foreground/60">Files live in your own Google Drive. Haven just helps you find and organize them.</p>
+              <p className="mt-6 text-sm leading-7 text-primary-foreground/60">Keep important files together in a private vault, or link documents that already live in Google Drive.</p>
               <div className="mt-9 flex items-center gap-2 text-xs text-primary-foreground/55">
-                <ShieldCheck className="h-4 w-4 text-sidebar-primary" /> Your files never leave your Drive
+                <ShieldCheck className="h-4 w-4 text-sidebar-primary" /> Private by default
               </div>
             </div>
           </div>
@@ -43,7 +43,7 @@ export default function Login() {
             <p className="eyebrow text-accent">Welcome</p>
             <h2 className="display mt-3 text-4xl" data-testid="heading-login">Sign in to your vault.</h2>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Haven uses your Google account. Your documents are stored directly in your Google Drive — Haven never copies them elsewhere.
+              Haven uses your Google account for sign-in. You decide whether a document is uploaded to the vault or linked from your own Google Drive.
             </p>
 
             <div className="mt-10">

@@ -29,6 +29,7 @@ import {
   getListDocumentsQueryKey,
   useGetSession,
   useLogout,
+  useRequestUploadUrl,
 } from '@workspace/api-client-react';
 import type { Document, User } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
@@ -182,12 +183,14 @@ export function DeleteConfirmDialog({
   onConfirm,
   isPending,
   title,
+  sourceType = 'upload',
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
   isPending: boolean;
   title: string;
+  sourceType?: 'upload' | 'link';
 }) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -195,7 +198,7 @@ export function DeleteConfirmDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Remove this document?</AlertDialogTitle>
           <AlertDialogDescription>
-            <span className="font-semibold text-foreground">{title}</span> will be removed from your vault and deleted from your Google Drive. This cannot be undone.
+            <span className="font-semibold text-foreground">{title}</span> will be removed from your vault{sourceType === 'link' ? '; the original file will remain in Google Drive.' : '.'} This cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -220,13 +223,7 @@ const SUPPORTED_MIME: Record<string, string> = {
   'image/webp': 'webp',
 };
 
-async function uploadDocument(formData: FormData): Promise<Document> {
-  const res = await fetch('/api/documents', { method: 'POST', body: formData, credentials: 'include' });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json() as Promise<Document>;
-}
-
-async function linkDocument(body: object): Promise<Document> {
+async function createDocument(body: object): Promise<Document> {
   const res = await fetch('/api/documents', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -239,6 +236,7 @@ async function linkDocument(body: object): Promise<Document> {
 
 export function DocumentDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const queryClient = useQueryClient();
+  const requestUploadUrl = useRequestUploadUrl();
   const [mode, setMode] = useState<'upload' | 'link'>('upload');
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
@@ -264,7 +262,7 @@ export function DocumentDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   const handleFile = (file: File | undefined) => {
     if (!file) return;
     if (!SUPPORTED_MIME[file.type]) { setError('Choose a PDF, PNG, JPG, or WEBP file.'); return; }
-    if (file.size > 50 * 1024 * 1024) { setError('Files must be 50 MB or smaller.'); return; }
+    if (file.size > 15 * 1024 * 1024) { setError('Files must be 15 MB or smaller.'); return; }
     setSelectedFile(file);
     setError('');
     if (!title.trim()) setTitle(file.name.replace(/\.[^/.]+$/, '').replace(/[-_]+/g, ' '));
@@ -284,16 +282,46 @@ export function DocumentDialog({ open, onOpenChange }: { open: boolean; onOpenCh
     try {
       if (mode === 'upload') {
         if (!selectedFile) { setError('Choose a file to upload.'); setSaving(false); return; }
-        const fd = new FormData();
-        fd.append('file', selectedFile);
-        fd.append('title', title.trim());
-        fd.append('category', category.trim());
-        fd.append('tags', tags);
-        fd.append('notes', notes.trim());
-        await uploadDocument(fd);
+        const upload = await requestUploadUrl.mutateAsync({
+          data: {
+            name: selectedFile.name,
+            size: selectedFile.size,
+            contentType: selectedFile.type,
+          },
+        });
+        const uploadResponse = await fetch(upload.uploadURL, {
+          method: 'PUT',
+          headers: { 'Content-Type': selectedFile.type },
+          body: selectedFile,
+        });
+        if (!uploadResponse.ok) throw new Error('The private file upload failed.');
+        await createDocument({
+          sourceType: 'upload',
+          title: title.trim(),
+          category: category.trim(),
+          tags: tags.split(',').map((tag) => tag.trim()).filter(Boolean),
+          notes: notes.trim() || undefined,
+          fileType: SUPPORTED_MIME[selectedFile.type],
+          sizeBytes: selectedFile.size,
+          objectPath: upload.objectPath,
+        });
       } else {
         if (!sourceUrl.trim()) { setError('Paste a Google Drive link.'); setSaving(false); return; }
-        await linkDocument({ title: title.trim(), category: category.trim(), tags: tags.split(',').map((t) => t.trim()).filter(Boolean), notes: notes.trim() || undefined, sourceUrl: sourceUrl.trim() });
+        try {
+          new URL(sourceUrl.trim());
+        } catch {
+          setError('Enter a valid document link.');
+          setSaving(false);
+          return;
+        }
+        await createDocument({
+          sourceType: 'link',
+          title: title.trim(),
+          category: category.trim(),
+          tags: tags.split(',').map((tag) => tag.trim()).filter(Boolean),
+          notes: notes.trim() || undefined,
+          sourceUrl: sourceUrl.trim(),
+        });
       }
       invalidate();
       reset();
@@ -310,7 +338,7 @@ export function DocumentDialog({ open, onOpenChange }: { open: boolean; onOpenCh
         <DialogHeader>
           <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-secondary text-primary"><UploadCloud className="h-5 w-5" /></div>
           <DialogTitle className="display text-2xl">Add to your vault</DialogTitle>
-          <DialogDescription>Upload a file to your Drive, or link an existing Drive document.</DialogDescription>
+          <DialogDescription>Add a file to your vault, or link an existing Google Drive document.</DialogDescription>
         </DialogHeader>
 
         {/* Mode tabs */}
@@ -352,7 +380,7 @@ export function DocumentDialog({ open, onOpenChange }: { open: boolean; onOpenCh
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
                     {selectedFile
                       ? `${(selectedFile.type.split('/')[1] ?? '').toUpperCase()} · ${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB`
-                      : 'PDF, PNG, JPG, or WEBP · up to 50 MB · saved to your Drive'}
+                       : 'PDF, PNG, JPG, or WEBP · up to 15 MB · stored privately'}
                   </p>
                 </div>
               </div>
@@ -371,7 +399,7 @@ export function DocumentDialog({ open, onOpenChange }: { open: boolean; onOpenCh
                   data-testid="input-source-url"
                 />
               </div>
-              <p className="text-xs text-muted-foreground">Paste a link to any file already in your Google Drive.</p>
+               <p className="text-xs text-muted-foreground">The file stays in Drive; Haven saves the link and your notes.</p>
             </div>
           )}
 
@@ -441,8 +469,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         })}
       </nav>
       <div className="mt-auto rounded-2xl border border-sidebar-border bg-sidebar-accent/50 p-4">
-        <div className="flex items-center gap-2 text-sidebar-primary"><Sparkles className="h-4 w-4" /><span className="text-xs font-semibold">Files live in your Drive</span></div>
-        <p className="mt-2 text-xs leading-5 text-sidebar-foreground/55">Haven organizes them. You own them.</p>
+        <div className="flex items-center gap-2 text-sidebar-primary"><Sparkles className="h-4 w-4" /><span className="text-xs font-semibold">Private by default</span></div>
+        <p className="mt-2 text-xs leading-5 text-sidebar-foreground/55">Upload here, or link a file you already keep in Drive.</p>
       </div>
       <div className="mt-4 flex items-center gap-3 border-t border-sidebar-border px-2 pt-4">
         {session?.user?.picture ? (
@@ -472,7 +500,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <button className="mr-3 rounded-lg p-2 text-muted-foreground hover:bg-muted md:hidden" onClick={() => setMobileOpen(true)} data-testid="button-open-menu"><Menu className="h-5 w-5" /></button>
           <div className="hidden items-center gap-2 text-sm text-muted-foreground sm:flex"><BookOpen className="h-4 w-4" /><span>Personal document vault</span></div>
           <div className="ml-auto flex items-center gap-3">
-            <div className="hidden items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground lg:flex"><ShieldCheck className="h-3.5 w-3.5 text-accent" /> Your Drive, your files</div>
+            <div className="hidden items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground lg:flex"><ShieldCheck className="h-3.5 w-3.5 text-accent" /> Private by default</div>
             <Link href="/settings" className="focus-ring flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-xs font-bold text-primary overflow-hidden" data-testid="link-header-settings">
               {session?.user?.picture ? <img src={session.user.picture} alt="" className="h-full w-full object-cover" /> : initials(user?.name)}
             </Link>

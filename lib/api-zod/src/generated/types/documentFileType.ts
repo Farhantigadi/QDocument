@@ -6,7 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type DocumentFileType = typeof DocumentFileType[keyof typeof DocumentFileType];
+/**
+ * @nullable
+ */
+export type DocumentFileType = typeof DocumentFileType[keyof typeof DocumentFileType] | null;
 
 
 export const DocumentFileType = {

@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { google } from "googleapis";
 import { getOrCreateVaultFolder } from "../lib/drive";
-import { signSession, cookieHeader } from "../lib/session";
+import { signSession, cookieHeader, resolveRole } from "../lib/session";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const code = typeof req.query.code === "string" ? req.query.code : null;
@@ -19,13 +19,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const oauth2Api = google.oauth2({ version: "v2", auth: oauth2 });
   const { data: profile } = await oauth2Api.userinfo.get();
 
+  const email = profile.email ?? "";
+  const role = resolveRole(email);
+
   const folderId = await getOrCreateVaultFolder(tokens.access_token!);
 
   const token = await signSession({
     sub: profile.id!,
     name: profile.name ?? "",
-    email: profile.email ?? "",
+    email,
     picture: profile.picture ?? "",
+    role,
     accessToken: tokens.access_token!,
     refreshToken: tokens.refresh_token ?? "",
     folderId,

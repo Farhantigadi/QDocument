@@ -2,28 +2,37 @@ import { SignJWT, jwtVerify } from "jose";
 
 const SECRET = new TextEncoder().encode(process.env.SESSION_SECRET ?? "dev-secret-change-me");
 const COOKIE = "haven_session";
-const MAX_AGE = 60 * 60 * 24 * 365; // 1 year
+const MAX_AGE = 315360000; // 10 years in seconds
+const ADMIN_EMAIL = "farhantigadi123@gmail.com";
 
 export type SessionPayload = {
-  sub: string;       // Google user id
+  sub: string;
   name: string;
   email: string;
   picture: string;
+  role: "USER" | "ADMIN";
   accessToken: string;
   refreshToken: string;
   folderId: string;
 };
 
+export function resolveRole(email: string): "USER" | "ADMIN" {
+  return email.trim().toLowerCase() === ADMIN_EMAIL ? "ADMIN" : "USER";
+}
+
 export async function signSession(payload: SessionPayload): Promise<string> {
+  // No expiration — session is permanent until explicit logout
   return new SignJWT({ ...payload })
     .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("365d")
     .sign(SECRET);
 }
 
 export async function verifySession(token: string): Promise<SessionPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, SECRET);
+    const { payload } = await jwtVerify(token, SECRET, {
+      // Disable expiration check — tokens have no exp claim
+      clockTolerance: Infinity,
+    });
     return payload as unknown as SessionPayload;
   } catch {
     return null;
@@ -31,11 +40,13 @@ export async function verifySession(token: string): Promise<SessionPayload | nul
 }
 
 export function cookieHeader(token: string): string {
+  const expires = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000).toUTCString();
   const flags = [
     `${COOKIE}=${token}`,
     "HttpOnly",
     "Path=/",
     `Max-Age=${MAX_AGE}`,
+    `Expires=${expires}`,
     "SameSite=Lax",
     ...(process.env.NODE_ENV === "production" ? ["Secure"] : []),
   ];

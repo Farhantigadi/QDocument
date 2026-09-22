@@ -1,6 +1,6 @@
 {
   "buildCommand": "pnpm --filter @workspace/document-vault run build",
-  "outputDirectory": "artifacts/document-vault/dist",
+  "outputDirectory": "artifacts/document-vault/dist/public",
   "functions": {
     "api/**/*.ts": { "runtime": "@vercel/node" }
   },
@@ -13,6 +13,8 @@
     { "source": "/api/documents/:documentId", "destination": "/api/documents/[documentId]/index" },
     { "source": "/api/dashboard/summary", "destination": "/api/dashboard/index" },
     { "source": "/api/dashboard/activity", "destination": "/api/dashboard/index" },
+    { "source": "/api/admin/overview", "destination": "/api/admin/index" },
+    { "source": "/api/admin/users", "destination": "/api/admin/index" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

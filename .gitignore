@@ -47,3 +47,27 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Environment variables — never commit secrets
+.env
+.env.local
+.env*.local
+.env.development
+.env.production
+.env.staging
+.env.test
+
+# Vercel
+.vercel
+
+# Conversation / AI context (may contain sensitive prompts)
+.conversation/
+
+# Build artifacts
+*.log
+logs/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+desktop.ini

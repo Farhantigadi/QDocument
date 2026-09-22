@@ -40,7 +40,18 @@ export interface Session {
   user: User;
 }
 
-export type DocumentFileType = typeof DocumentFileType[keyof typeof DocumentFileType];
+export type DocumentSourceType = typeof DocumentSourceType[keyof typeof DocumentSourceType];
+
+
+export const DocumentSourceType = {
+  upload: 'upload',
+  link: 'link',
+} as const;
+
+/**
+ * @nullable
+ */
+export type DocumentFileType = typeof DocumentFileType[keyof typeof DocumentFileType] | null;
 
 
 export const DocumentFileType = {
@@ -58,23 +69,20 @@ export const DocumentStatus = {
   deleted: 'deleted',
 } as const;
 
-export type DocumentSourceType = typeof DocumentSourceType[keyof typeof DocumentSourceType];
-
-
-export const DocumentSourceType = {
-  upload: 'upload',
-  link: 'link',
-} as const;
-
 export interface Document {
   id: string;
   title: string;
   category: string;
   sourceType: DocumentSourceType;
+  /** @nullable */
+  objectPath?: string | null;
+  /** @nullable */
   driveFileId?: string | null;
   tags?: string[];
   notes?: string;
-  fileType?: DocumentFileType | null;
+  /** @nullable */
+  fileType?: DocumentFileType;
+  /** @nullable */
   sizeBytes?: number | null;
   /** @nullable */
   sourceUrl?: string | null;
@@ -84,6 +92,14 @@ export interface Document {
   /** @nullable */
   thumbnailUrl?: string | null;
 }
+
+export type DocumentInputSourceType = typeof DocumentInputSourceType[keyof typeof DocumentInputSourceType];
+
+
+export const DocumentInputSourceType = {
+  upload: 'upload',
+  link: 'link',
+} as const;
 
 export type DocumentInputFileType = typeof DocumentInputFileType[keyof typeof DocumentInputFileType];
 
@@ -106,16 +122,42 @@ export interface DocumentInput {
      * @maxLength 40
      */
   category: string;
+  sourceType: DocumentInputSourceType;
   /** @items.maxLength 40 */
   tags?: string[];
   /** @maxLength 2000 */
   notes?: string;
-  fileType: DocumentInputFileType;
+  fileType?: DocumentInputFileType;
   /**
      * @minimum 1
      * @maximum 15728640
      */
-  sizeBytes: number;
+  sizeBytes?: number;
+  /** @maxLength 2048 */
+  sourceUrl?: string;
+  /** @maxLength 512 */
+  objectPath?: string;
+}
+
+export interface UploadUrlRequest {
+  /**
+     * @minLength 1
+     * @maxLength 255
+     */
+  name: string;
+  /**
+     * @minimum 1
+     * @maximum 15728640
+     */
+  size: number;
+  /** @minLength 1 */
+  contentType: string;
+}
+
+export interface UploadUrlResponse {
+  uploadURL: string;
+  objectPath: string;
+  metadata?: UploadUrlRequest;
 }
 
 export interface DocumentUpdate {

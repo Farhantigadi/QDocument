@@ -18,6 +18,7 @@ export type VaultDocument = {
   fileType: "pdf" | "png" | "jpg" | "webp" | null;
   sizeBytes: number | null;
   sourceUrl: string | null;
+  objectPath: string | null;
   uploadedAt: string;
   updatedAt: string;
   status: "active" | "deleted";
@@ -54,6 +55,7 @@ export const documents: VaultDocument[] = [
     fileType: "pdf",
     sizeBytes: 2_400_000,
     sourceUrl: null,
+    objectPath: null,
     uploadedAt: iso(42),
     updatedAt: iso(42),
     status: "active",
@@ -69,6 +71,7 @@ export const documents: VaultDocument[] = [
     fileType: "pdf",
     sizeBytes: 4_800_000,
     sourceUrl: null,
+    objectPath: null,
     uploadedAt: iso(1_440),
     updatedAt: iso(1_440),
     status: "active",
@@ -84,6 +87,7 @@ export const documents: VaultDocument[] = [
     fileType: "pdf",
     sizeBytes: 1_200_000,
     sourceUrl: null,
+    objectPath: null,
     uploadedAt: iso(2_880),
     updatedAt: iso(2_880),
     status: "active",
@@ -99,6 +103,7 @@ export const documents: VaultDocument[] = [
     fileType: "png",
     sizeBytes: 980_000,
     sourceUrl: null,
+    objectPath: null,
     uploadedAt: iso(5_040),
     updatedAt: iso(5_040),
     status: "active",

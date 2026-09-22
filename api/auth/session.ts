@@ -15,7 +15,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       name: session.name,
       email: session.email,
       picture: session.picture,
-      role: "USER",
+      role: session.role,
       status: "ACTIVE",
     },
   });
