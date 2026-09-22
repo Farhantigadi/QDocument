@@ -1,4 +1,5 @@
 {
+  "installCommand": "pnpm install --no-frozen-lockfile",
   "buildCommand": "pnpm --filter @workspace/document-vault run build",
   "outputDirectory": "artifacts/document-vault/dist/public",
   "functions": {
