@@ -11,8 +11,10 @@ import {
   findDocument,
   type VaultDocument,
 } from "../lib/vault-store";
+import { ObjectStorageService } from "../lib/objectStorage";
 
 const router: IRouter = Router();
+const objectStorage = new ObjectStorageService();
 
 router.get("/documents", (req, res) => {
   const search = typeof req.query.search === "string" ? req.query.search.toLowerCase() : "";
@@ -44,6 +46,10 @@ router.post("/documents", (req, res) => {
     res.status(400).json({ error: "Uploaded documents require a file." });
     return;
   }
+  if (input.sourceType === "upload" && (!input.objectPath || !input.objectPath.startsWith("/objects/uploads/"))) {
+    res.status(400).json({ error: "Uploaded documents require a private object." });
+    return;
+  }
   if (input.sourceType === "link" && !input.sourceUrl) {
     res.status(400).json({ error: "Linked documents require a URL." });
     return;
@@ -59,6 +65,7 @@ router.post("/documents", (req, res) => {
     fileType: input.fileType ?? null,
     sizeBytes: input.sizeBytes ?? null,
     sourceUrl: input.sourceUrl ?? null,
+    objectPath: input.objectPath ?? null,
     uploadedAt: timestamp,
     updatedAt: timestamp,
     status: "active",
@@ -99,6 +106,11 @@ router.delete("/documents/:documentId", (req, res) => {
   if (!document || document.status === "deleted") {
     res.status(404).json({ error: "Document not found" });
     return;
+  }
+  if (document.objectPath) {
+    objectStorage.deleteObjectEntity(document.objectPath).catch((error) => {
+      req.log.error({ err: error, documentId }, "Could not delete private document object");
+    });
   }
   document.status = "deleted";
   document.updatedAt = new Date().toISOString();

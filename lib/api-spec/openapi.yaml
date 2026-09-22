@@ -18,6 +18,8 @@ tags:
     description: Dashboard summaries and activity
   - name: admin
     description: Administrator operations
+  - name: Storage
+    description: Private object storage upload and serving endpoints.
 paths:
   /healthz:
     get:
@@ -96,6 +98,52 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Document"
+  /storage/uploads/request-url:
+    post:
+      operationId: requestUploadUrl
+      tags: [Storage]
+      summary: Request a presigned URL for a private file upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadUrlRequest"
+      responses:
+        "200":
+          description: Presigned upload URL generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
+        "400":
+          description: Missing or invalid required fields
+        "401":
+          description: Unauthorized
+        "500":
+          description: Failed to generate upload URL
+  /storage/objects/{objectPath}:
+    get:
+      operationId: getStorageObject
+      tags: [Storage]
+      summary: Serve a private uploaded object
+      parameters:
+        - name: objectPath
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Private object content
+          content:
+            "*/*":
+              schema:
+                type: string
+                format: binary
+        "401":
+          description: Unauthorized
+        "404":
+          description: Object not found
   /documents/{documentId}:
     get:
       operationId: getDocument
@@ -238,6 +286,7 @@ components:
         sourceType:
           type: string
           enum: [upload, link]
+        objectPath: { type: ["string", "null"] }
         driveFileId: { type: ["string", "null"] }
         tags:
           type: array
@@ -272,6 +321,22 @@ components:
           enum: [pdf, png, jpg, webp]
         sizeBytes: { type: integer, minimum: 1, maximum: 15728640 }
         sourceUrl: { type: string, format: uri, maxLength: 2048 }
+        objectPath: { type: string, maxLength: 512 }
+    UploadUrlRequest:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 255 }
+        size: { type: integer, minimum: 1, maximum: 15728640 }
+        contentType: { type: string, minLength: 1 }
+    UploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL: { type: string, format: uri }
+        objectPath: { type: string }
+        metadata:
+          $ref: "#/components/schemas/UploadUrlRequest"
     DocumentUpdate:
       type: object
       properties:

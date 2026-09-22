@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { DocumentInputFileType } from './documentInputFileType';
+import type { DocumentInputSourceType } from './documentInputSourceType';
 
 export interface DocumentInput {
   /**
@@ -18,14 +19,19 @@ export interface DocumentInput {
      * @maxLength 40
      */
   category: string;
+  sourceType: DocumentInputSourceType;
   /** @items.maxLength 40 */
   tags?: string[];
   /** @maxLength 2000 */
   notes?: string;
-  fileType: DocumentInputFileType;
+  fileType?: DocumentInputFileType;
   /**
      * @minimum 1
      * @maximum 15728640
      */
-  sizeBytes: number;
+  sizeBytes?: number;
+  /** @maxLength 2048 */
+  sourceUrl?: string;
+  /** @maxLength 512 */
+  objectPath?: string;
 }
