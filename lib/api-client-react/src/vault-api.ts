@@ -6,9 +6,9 @@ import type {
   UseQueryResult,
   UseMutationResult,
 } from "@tanstack/react-query";
-import type { Credential, CredentialWithPassword, CredentialInput, CredentialUpdate } from "./api.schemas";
-import { customFetch } from "../custom-fetch";
-import type { ErrorType, BodyType } from "../custom-fetch";
+import type { Credential, CredentialWithPassword, CredentialInput, CredentialUpdate } from "./generated/api.schemas";
+import { customFetch } from "./custom-fetch";
+import type { ErrorType, BodyType } from "./custom-fetch";
 
 // ── List credentials (no passwords) ──────────────────────────────────────────
 export const getListCredentialsQueryKey = () => ["/api/vault"] as const;
