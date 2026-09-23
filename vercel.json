@@ -1,28 +1,36 @@
 {
-  "framework": null,
+  "version": 2,
   "installCommand": "pnpm install --no-frozen-lockfile",
-  "buildCommand": "pnpm --filter @workspace/document-vault run build",
-  "outputDirectory": "artifacts/document-vault/dist",
-  "functions": {
-    "api/**/*.ts": { "runtime": "@vercel/node" }
-  },
+  "builds": [
+    {
+      "src": "artifacts/document-vault/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    },
+    {
+      "src": "api/**/*.ts",
+      "use": "@vercel/node"
+    }
+  ],
   "routes": [
-    { "src": "/api/auth/login",                    "dest": "/api/auth/login" },
-    { "src": "/api/auth/signup",                   "dest": "/api/auth/signup" },
-    { "src": "/api/auth/session",                  "dest": "/api/auth/session" },
-    { "src": "/api/auth/logout",                   "dest": "/api/auth/logout" },
-    { "src": "/api/auth/forgot-password/verify",   "dest": "/api/auth/forgot-password" },
-    { "src": "/api/auth/forgot-password",          "dest": "/api/auth/forgot-password" },
-    { "src": "/api/documents/([^/]+)",             "dest": "/api/documents/[documentId]/index" },
-    { "src": "/api/documents",                     "dest": "/api/documents/index" },
-    { "src": "/api/dashboard/summary",             "dest": "/api/dashboard/index" },
-    { "src": "/api/dashboard/activity",            "dest": "/api/dashboard/index" },
-    { "src": "/api/admin/overview",                "dest": "/api/admin/index" },
-    { "src": "/api/admin/users",                   "dest": "/api/admin/index" },
-    { "src": "/api/admin/delegate",                "dest": "/api/admin/index" },
-    { "src": "/api/vault/([^/]+)",                 "dest": "/api/vault/[credentialId]/index" },
-    { "src": "/api/vault",                         "dest": "/api/vault/index" },
+    { "src": "/api/auth/login",                  "dest": "/api/auth/login" },
+    { "src": "/api/auth/signup",                 "dest": "/api/auth/signup" },
+    { "src": "/api/auth/session",                "dest": "/api/auth/session" },
+    { "src": "/api/auth/logout",                 "dest": "/api/auth/logout" },
+    { "src": "/api/auth/forgot-password/verify", "dest": "/api/auth/forgot-password" },
+    { "src": "/api/auth/forgot-password",        "dest": "/api/auth/forgot-password" },
+    { "src": "/api/documents/([^/]+)",           "dest": "/api/documents/[documentId]/index" },
+    { "src": "/api/documents",                   "dest": "/api/documents/index" },
+    { "src": "/api/dashboard/summary",           "dest": "/api/dashboard/index" },
+    { "src": "/api/dashboard/activity",          "dest": "/api/dashboard/index" },
+    { "src": "/api/admin/overview",              "dest": "/api/admin/index" },
+    { "src": "/api/admin/users",                 "dest": "/api/admin/index" },
+    { "src": "/api/admin/delegate",              "dest": "/api/admin/index" },
+    { "src": "/api/vault/([^/]+)",               "dest": "/api/vault/[credentialId]/index" },
+    { "src": "/api/vault",                       "dest": "/api/vault/index" },
     { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    { "src": "/(.*)",                            "dest": "/index.html" }
   ]
 }
