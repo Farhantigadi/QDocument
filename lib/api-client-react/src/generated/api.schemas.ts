@@ -227,10 +227,41 @@ export interface UserSummary {
   id: string;
   name: string;
   email: string;
+  role: string;
   status: UserSummaryStatus;
   documentCount: number;
   storageUsedBytes: number;
   storageLimitBytes: number;
+}
+
+export interface Credential {
+  id: string;
+  accountName: string;
+  username: string;
+  websiteUrl: string;
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CredentialWithPassword extends Credential {
+  password: string;
+}
+
+export interface CredentialInput {
+  accountName: string;
+  username?: string;
+  password: string;
+  websiteUrl?: string;
+  notes?: string;
+}
+
+export interface CredentialUpdate {
+  accountName?: string;
+  username?: string;
+  password?: string;
+  websiteUrl?: string;
+  notes?: string;
 }
 
 export type ListDocumentsParams = {

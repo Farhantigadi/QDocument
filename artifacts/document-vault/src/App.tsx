@@ -11,6 +11,7 @@ import Documents from '@/pages/documents';
 import Login from '@/pages/login';
 import NotFound from '@/pages/not-found';
 import Settings from '@/pages/settings';
+import Vault from '@/pages/vault';
 import { useGetSession } from '@workspace/api-client-react';
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ function ProtectedRoutes() {
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/documents" component={Documents} />
         <Route path="/documents/:id" component={DocumentDetail} />
+        <Route path="/vault" component={Vault} />
         <Route path="/settings" component={Settings} />
         <Route path="/admin" component={AdminRoute} />
         <Route component={NotFound} />

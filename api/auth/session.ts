@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+export const dynamic = "force-dynamic";
 import { verifySession, parseCookie } from "../lib/session";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -14,7 +15,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       id: session.sub,
       name: session.name,
       email: session.email,
-      picture: session.picture,
       role: session.role,
       status: "ACTIVE",
     },

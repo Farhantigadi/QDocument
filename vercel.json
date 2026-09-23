@@ -7,15 +7,20 @@
   },
   "rewrites": [
     { "source": "/api/auth/login", "destination": "/api/auth/login" },
-    { "source": "/api/auth/callback", "destination": "/api/auth/callback" },
+    { "source": "/api/auth/signup", "destination": "/api/auth/signup" },
     { "source": "/api/auth/session", "destination": "/api/auth/session" },
     { "source": "/api/auth/logout", "destination": "/api/auth/logout" },
+    { "source": "/api/auth/forgot-password", "destination": "/api/auth/forgot-password" },
+    { "source": "/api/auth/forgot-password/verify", "destination": "/api/auth/forgot-password" },
     { "source": "/api/documents", "destination": "/api/documents/index" },
     { "source": "/api/documents/:documentId", "destination": "/api/documents/[documentId]/index" },
     { "source": "/api/dashboard/summary", "destination": "/api/dashboard/index" },
     { "source": "/api/dashboard/activity", "destination": "/api/dashboard/index" },
     { "source": "/api/admin/overview", "destination": "/api/admin/index" },
     { "source": "/api/admin/users", "destination": "/api/admin/index" },
+    { "source": "/api/admin/delegate", "destination": "/api/admin/index" },
+    { "source": "/api/vault", "destination": "/api/vault/index" },
+    { "source": "/api/vault/:credentialId", "destination": "/api/vault/[credentialId]/index" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
