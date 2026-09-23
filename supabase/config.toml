@@ -1,0 +1,3 @@
+[functions.haven-api]
+verify_jwt = false
+entrypoint = "./functions/haven-api/index.ts"
