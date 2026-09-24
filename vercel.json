@@ -1,23 +1,10 @@
 {
   "version": 2,
   "installCommand": "pnpm install --no-frozen-lockfile",
-  "builds": [
-    {
-      "src": "artifacts/document-vault/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    },
-    {
-      "src": "api/**/*.ts",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    { "src": "/api/(.*)",                        "dest": "/api/$1" },
-    { "src": "/assets/(.*)",                     "dest": "/assets/$1" },
-    { "handle": "filesystem" },
-    { "src": "(.*)",                              "dest": "/index.html" }
+  "buildCommand": "pnpm --filter @workspace/document-vault run build",
+  "outputDirectory": "artifacts/document-vault/dist",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
