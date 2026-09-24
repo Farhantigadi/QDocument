@@ -1,13 +1,12 @@
 {
   "version": 2,
   "installCommand": "pnpm install --no-frozen-lockfile",
-  "buildCommand": "cd artifacts/api-server && pnpm build && cd ../document-vault && pnpm run vercel-build",
   "builds": [
     {
-      "src": "artifacts/document-vault/package.json",
+      "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "dist"
+        "distDir": "artifacts/document-vault/dist"
       }
     },
     {
