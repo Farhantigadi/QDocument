@@ -1,6 +1,14 @@
 import { SignJWT, jwtVerify } from "jose";
 
-const SECRET = new TextEncoder().encode(process.env.SESSION_SECRET ?? "dev-secret-change-me");
+const rawSecret = process.env.SESSION_SECRET;
+if (!rawSecret) {
+  throw new Error(
+    "Missing configuration: SESSION_SECRET is not set.\n" +
+      "Generate one locally with: openssl rand -base64 32\n" +
+      "and set it as the environment variable SESSION_SECRET.\n",
+  );
+}
+const SECRET = new TextEncoder().encode(rawSecret);
 const COOKIE = "haven_session";
 const MAX_AGE = 315360000; // 10 years
 

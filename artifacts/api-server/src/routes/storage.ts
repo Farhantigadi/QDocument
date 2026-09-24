@@ -2,19 +2,12 @@ import { Readable } from 'node:stream';
 import { RequestUploadUrlBody, RequestUploadUrlResponse } from '@workspace/api-zod';
 import { Router, type IRouter, type Request, type Response } from 'express';
 import { ObjectNotFoundError, ObjectStorageService } from '../lib/objectStorage';
+import { requireAuth } from '../middlewares/auth';
 
 const router: IRouter = Router();
 const storage = new ObjectStorageService();
 
-function hasSession(req: Request): boolean {
-  return req.cookies?.haven_session === 'demo-persistent-session';
-}
-
-router.post('/storage/uploads/request-url', async (req: Request, res: Response) => {
-  if (!hasSession(req)) {
-    res.status(401).json({ error: 'Unauthorized' });
-    return;
-  }
+router.post('/storage/uploads/request-url', requireAuth, async (req: Request, res: Response) => {
   const parsed = RequestUploadUrlBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: 'Missing or invalid required fields' });
@@ -35,11 +28,7 @@ router.post('/storage/uploads/request-url', async (req: Request, res: Response) 
   }
 });
 
-router.get('/storage/objects/*path', async (req: Request, res: Response) => {
-  if (!hasSession(req)) {
-    res.status(401).json({ error: 'Unauthorized' });
-    return;
-  }
+router.get('/storage/objects/*path', requireAuth, async (req: Request, res: Response) => {
   try {
     const raw = req.params.path;
     const wildcardPath = Array.isArray(raw) ? raw.join('/') : raw;

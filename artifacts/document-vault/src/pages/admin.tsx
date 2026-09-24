@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Activity, Database, FileStack, HardDrive, ShieldCheck, Users } from 'lucide-react';
+import { Activity, Database, FileStack, HardDrive, ShieldCheck, Trash2, Users } from 'lucide-react';
 import { useGetAdminOverview, useGetSession, useListUsers } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,7 +49,18 @@ export default function Admin() {
   const session = useGetSession();
   const overview = useGetAdminOverview();
   const users = useListUsers();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const sortedUsers = useMemo(() => [...(users.data ?? [])].sort((a, b) => b.documentCount - a.documentCount), [users.data]);
+
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    if (!confirm(`Delete account for "${userName}"? This cannot be undone.`)) return;
+    setDeletingId(userId);
+    try {
+      await fetch(`/api/admin/users/${userId}`, { method: 'DELETE', credentials: 'include' });
+      await users.refetch();
+      await overview.refetch();
+    } finally { setDeletingId(null); }
+  };
   const metrics = overview.data ? [
     { label: 'People with access', value: overview.data.userCount, icon: Users, testId: 'users' },
     { label: 'Documents held', value: overview.data.documentCount, icon: FileStack, testId: 'documents' },
@@ -111,6 +122,7 @@ export default function Admin() {
                       <th className="px-5 py-4 font-medium">Role</th>
                       <th className="px-5 py-4 font-medium">Status</th>
                       <th className="px-5 py-4 font-medium">Documents</th>
+                      <th className="px-5 py-4 font-medium">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -129,6 +141,16 @@ export default function Admin() {
                           <span className="inline-flex rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold text-primary" data-testid={`status-user-${user.id}`}>{user.status.toLowerCase()}</span>
                         </td>
                         <td className="px-5 py-4 mono text-xs">{user.documentCount}</td>
+                        <td className="px-5 py-4">
+                          {user.id !== session.data?.user?.id && (
+                            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              disabled={deletingId === user.id}
+                              onClick={() => handleDeleteUser(user.id, user.name)}
+                              data-testid={`button-delete-user-${user.id}`}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

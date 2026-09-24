@@ -1,29 +1,43 @@
 import { Router, type IRouter } from "express";
+import { eq, and, desc } from "drizzle-orm";
 import { GetDashboardSummaryResponse, ListActivityResponse } from "@workspace/api-zod";
-import { activities, bytesUsed, documents } from "../lib/vault-store";
+import { db, schema } from "../lib/db";
+import { requireAuth } from "../middlewares/auth";
 
 const router: IRouter = Router();
 const STORAGE_LIMIT = 15 * 1024 * 1024 * 1024;
 
-router.get("/dashboard/summary", (_req, res) => {
-  const activeDocuments = documents.filter((document) => document.status === "active");
+router.get("/dashboard/summary", requireAuth, async (req, res) => {
+  const userId = req.session!.sub;
+  const docs = await db.select().from(schema.documentsTable)
+    .where(and(eq(schema.documentsTable.userId, userId), eq(schema.documentsTable.status, "active")));
+
   const categoryCounts = new Map<string, number>();
-  for (const document of activeDocuments) {
-    categoryCounts.set(document.category, (categoryCounts.get(document.category) ?? 0) + 1);
+  for (const doc of docs) {
+    categoryCounts.set(doc.category, (categoryCounts.get(doc.category) ?? 0) + 1);
   }
 
-  const data = GetDashboardSummaryResponse.parse({
-    documentCount: activeDocuments.length,
-    storageUsedBytes: bytesUsed(),
+  res.json(GetDashboardSummaryResponse.parse({
+    documentCount: docs.length,
+    storageUsedBytes: 0,
     storageLimitBytes: STORAGE_LIMIT,
     categories: [...categoryCounts.entries()].map(([category, count]) => ({ category, count })),
-  });
-  res.json(data);
+  }));
 });
 
-router.get("/dashboard/activity", (_req, res) => {
-  const data = ListActivityResponse.parse(activities.slice(0, 8));
-  res.json(data);
+router.get("/dashboard/activity", requireAuth, async (req, res) => {
+  const userId = req.session!.sub;
+  const rows = await db.select().from(schema.activityTable)
+    .where(eq(schema.activityTable.userId, userId))
+    .orderBy(desc(schema.activityTable.createdAt))
+    .limit(8);
+
+  res.json(ListActivityResponse.parse(rows.map(r => ({
+    id: r.id,
+    action: r.action,
+    label: r.label,
+    createdAt: r.createdAt.toISOString(),
+  }))));
 });
 
 export default router;

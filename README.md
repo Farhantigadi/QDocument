@@ -1,41 +1,19 @@
 # Haven — Personal Document Vault
 
-Haven is a personal document vault for families. It lets you store, organize, and find important documents — passports, insurance policies, leases, certificates — in one quiet place. Every file lives in **your own Google Drive**. Haven never copies your data anywhere else.
-
-Built for small groups (10–100 people). No heavy database, no S3 bucket, no monthly infra bill.
+Haven is a personal document vault. Store, organize, and find important documents — passports, insurance policies, leases, certificates — in one secure place.
 
 ---
 
 ## What it does
 
-- Sign in with Google — no passwords, no OTP codes
-- Upload files directly to a `Haven Vault` folder in your Google Drive
-- Or link an existing Google Drive document by URL
-- Organize documents by category and tags
+- Sign up with email + OTP verification (no unverified accounts)
+- Sign in with email and password
+- Upload or link documents, organize by category and tags
 - Search and sort your vault
-- Edit document metadata (title, category, tags, notes)
-- Delete documents — removes from vault and from Drive
-- Dashboard with storage usage, category breakdown, and recent activity
-- Works for the whole family — each person's files stay in their own Drive
-
----
-
-## How the storage works
-
-There is no separate database. Each user's Google Drive acts as both the file store and the database.
-
-When you first sign in, Haven creates a `Haven Vault` folder in your Drive and a `haven-vault.json` file inside it. That JSON file is the index — it stores all document metadata (title, category, tags, notes, Drive file ID). Every read and write goes through that file.
-
-```
-Your Google Drive/
-└── Haven Vault/
-    ├── haven-vault.json     ← the "database" (metadata index)
-    ├── Passport scan.pdf
-    ├── Health insurance.pdf
-    └── Apartment lease.pdf
-```
-
-Sessions are JWT tokens stored in an HttpOnly cookie. No session database needed.
+- Edit and delete documents
+- Dashboard with category breakdown and recent activity
+- Password vault for storing encrypted credentials
+- Admin panel — view all users, delete accounts
 
 ---
 
@@ -43,12 +21,12 @@ Sessions are JWT tokens stored in an HttpOnly cookie. No session database needed
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 19, Vite, Tailwind CSS, shadcn/ui primitives, Wouter |
-| API | Vercel Serverless Functions (TypeScript) |
-| Auth | Google OAuth 2.0 → JWT cookie (jose) |
-| Storage | Google Drive API (googleapis) |
-| File parsing | formidable (multipart uploads) |
-| Deployment | Vercel |
+| Frontend | React 19, Vite, Tailwind CSS, shadcn/ui, Wouter |
+| API | Express 5 (Node.js) |
+| Auth | Email + OTP → JWT cookie (jose, bcryptjs) |
+| Database | PostgreSQL via Supabase (Drizzle ORM) |
+| Email | Gmail SMTP via Nodemailer |
+| Deployment | Vercel (frontend) + any Node host (API) |
 
 ---
 
@@ -56,121 +34,117 @@ Sessions are JWT tokens stored in an HttpOnly cookie. No session database needed
 
 ```
 /
-├── api/                        ← Vercel serverless functions
-│   ├── auth/
-│   │   ├── login.ts            ← redirects to Google OAuth
-│   │   ├── callback.ts         ← exchanges code, sets session cookie
-│   │   ├── session.ts          ← returns current user from cookie
-│   │   └── logout.ts           ← clears cookie
-│   ├── documents/
-│   │   ├── index.ts            ← GET list, POST upload/link
-│   │   └── [documentId]/
-│   │       └── index.ts        ← GET, PATCH, DELETE one document
-│   ├── dashboard/
-│   │   └── index.ts            ← summary + activity (derived from Drive index)
-│   └── lib/
-│       ├── drive.ts            ← all Google Drive operations
-│       └── session.ts          ← JWT sign/verify/cookie helpers
-│
 ├── artifacts/
-│   └── document-vault/         ← React frontend (Vite)
+│   ├── api-server/         ← Express API server
+│   │   └── src/
+│   │       ├── routes/     ← auth, documents, dashboard, admin, storage
+│   │       └── lib/        ← db, session, email, objectStorage
+│   └── document-vault/     ← React frontend (Vite)
 │       └── src/
-│           ├── pages/          ← login, dashboard, documents, detail, settings
+│           ├── pages/      ← login, dashboard, documents, vault, settings, admin
 │           └── components/
-│               └── vault-ui.tsx ← shared UI: DocumentDialog, AppShell, cards
-│
 ├── lib/
-│   ├── api-spec/openapi.yaml   ← OpenAPI contract (source of truth)
-│   ├── api-client-react/       ← generated React Query hooks
-│   └── api-zod/                ← generated Zod validation schemas
-│
-├── vercel.json                 ← routes /api/* to functions, /* to SPA
-├── .env.example                ← environment variable template
-└── .env.local                  ← your local secrets (never committed)
+│   ├── db/                 ← Drizzle schema + migrations
+│   ├── api-client-react/   ← React Query hooks
+│   └── api-zod/            ← Zod validation schemas
+├── .env.example            ← environment variable template
+└── .env.local              ← your local secrets (never committed)
 ```
 
 ---
 
 ## Running locally
 
-You need two terminals.
-
 **Prerequisites**
-- Node.js 18+
+- Node.js 20+
 - pnpm (`npm install -g pnpm`)
-- Vercel CLI (`npm install -g vercel`)
 
 **1. Install dependencies**
 ```bash
 cd C:\Personal-Projects\QDocument
-pnpm approve-builds   # approve esbuild on first run
 pnpm install
 ```
 
 **2. Set up environment variables**
 
-Copy `.env.example` to `.env.local` and fill in your Google credentials:
-```
-GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your-client-secret
-GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/callback
-SESSION_SECRET=any-random-32-char-string
+Copy `.env.example` to `.env.local` and fill in your values:
+```bash
+cp .env.example .env.local
 ```
 
-**3. Terminal 1 — API (Vercel functions)**
+Required variables:
+```
+SESSION_SECRET=        # random 32+ char string
+DATABASE_URL=          # Supabase pooled connection string
+VAULT_ENCRYPTION_KEY=  # 64 hex chars (32 bytes)
+ADMIN_EMAIL=           # email that gets ADMIN role on signup
+SMTP_USER=             # your Gmail address
+SMTP_PASS=             # Gmail App Password (16 chars, no spaces)
+PORT=3000
+```
+
+**3. Terminal 1 — API server**
 ```bash
-cd C:\Personal-Projects\QDocument
-npx vercel dev
+cd artifacts/api-server
+pnpm build
+pnpm dev
 ```
 Runs at `http://localhost:3000`
 
-**4. Terminal 2 — Frontend (Vite)**
+**4. Terminal 2 — Frontend**
 ```bash
-cd C:\Personal-Projects\QDocument\artifacts\document-vault
+cd artifacts/document-vault
 pnpm dev
 ```
 Runs at `http://localhost:5173` — proxies `/api/*` to port 3000 automatically.
 
-Open `http://localhost:5173` in your browser.
+---
+
+## Gmail App Password setup
+
+1. Enable **2-Step Verification** on your Google account
+2. Go to [Google Account → Security → App Passwords](https://myaccount.google.com/apppasswords)
+3. Generate a password for "Haven"
+4. Paste the 16-char password into `SMTP_PASS` in `.env.local` (no spaces)
 
 ---
 
-## Getting Google credentials
+## Database setup (Supabase)
 
-1. Go to [console.cloud.google.com](https://console.cloud.google.com)
-2. Create a project
-3. Enable **Google Drive API** and **Google People API**
-4. Go to **Credentials → Create → OAuth 2.0 Client ID**
-   - Type: Web application
-   - Authorized redirect URI: `http://localhost:3000/api/auth/callback`
-5. Copy Client ID and Client Secret into `.env.local`
-6. Go to **OAuth consent screen → Test users** and add your own email
-
----
-
-## Deploying to Vercel
-
+1. Create a free project at [supabase.com](https://supabase.com)
+2. Copy the **pooled connection string** (port 6543) into `DATABASE_URL`
+3. Run migrations:
 ```bash
-# from project root
-npx vercel --prod
+cd lib/db
+# set DATABASE_URL in your environment, then:
+npx drizzle-kit push
 ```
 
-Then in the Vercel dashboard, add these environment variables:
+---
 
-| Variable | Value |
-|---|---|
-| `GOOGLE_CLIENT_ID` | from Google Console |
-| `GOOGLE_CLIENT_SECRET` | from Google Console |
-| `GOOGLE_REDIRECT_URI` | `https://your-app.vercel.app/api/auth/callback` |
-| `SESSION_SECRET` | random 32+ char string |
+## Auth flow
 
-Also add `https://your-app.vercel.app/api/auth/callback` as an authorized redirect URI in Google Console.
+**Signup**
+1. User enters name, email, password → OTP sent to email
+2. User enters 6-digit code → account created + logged in
+
+**Login**
+- Email + password → JWT session cookie
+
+**Forgot password**
+1. User enters email → OTP sent to email
+2. User enters code + new password → password updated
 
 ---
 
-## Privacy model
+## Environment variables reference
 
-- Haven requests the `drive.file` OAuth scope — it can only see files **it created**, never your existing Drive files
-- Each user's data is completely isolated — no shared database, no cross-user access possible
-- Sessions expire on logout; the JWT cookie is HttpOnly and never readable by JavaScript
-- Deleting a document from Haven also deletes the file from Drive
+| Variable | Description |
+|---|---|
+| `SESSION_SECRET` | Secret for signing JWT cookies |
+| `DATABASE_URL` | PostgreSQL connection string |
+| `VAULT_ENCRYPTION_KEY` | AES-256-GCM key for credential encryption (64 hex chars) |
+| `ADMIN_EMAIL` | Email address that receives ADMIN role |
+| `SMTP_USER` | Gmail address for sending OTP emails |
+| `SMTP_PASS` | Gmail App Password |
+| `PORT` | API server port (default 3000) |

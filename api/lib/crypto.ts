@@ -1,7 +1,17 @@
 import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
 
 const ALGORITHM = "aes-256-gcm";
-const KEY = Buffer.from(process.env.VAULT_ENCRYPTION_KEY ?? "0".repeat(64), "hex");
+const rawKey = process.env.VAULT_ENCRYPTION_KEY;
+if (!rawKey) {
+  throw new Error(
+    "Missing configuration: VAULT_ENCRYPTION_KEY is not set.\n" +
+      "Provide a 32-byte key (64 hex chars). Generate with: openssl rand -hex 32\n",
+  );
+}
+if (!/^[0-9a-fA-F]{64}$/.test(rawKey)) {
+  throw new Error("Invalid VAULT_ENCRYPTION_KEY: must be 64 hex characters (32 bytes).");
+}
+const KEY = Buffer.from(rawKey, "hex");
 
 export function encrypt(plaintext: string): string {
   const iv = randomBytes(12);

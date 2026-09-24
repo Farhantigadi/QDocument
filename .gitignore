@@ -72,3 +72,8 @@ logs/
 Thumbs.db
 desktop.ini
 .env*
+
+# Ensure local envs and Vercel tokens are never committed
+.env.local
+.env
+.vercel/.env.*
