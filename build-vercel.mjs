@@ -57,10 +57,17 @@ await cp(
   { recursive: true }
 );
 
-// Write the function entry that imports the app bundle
+// Write the function entry - must be CJS-compatible handler
 await writeFile(
   path.join(funcDir, "index.mjs"),
-  `import app from "./app.mjs";\nexport default app;\n`
+  [
+    `import app from "./app.mjs";`,
+    `export default async function handler(req, res) {`,
+    `  await new Promise((resolve, reject) => {`,
+    `    app(req, res, (err) => err ? reject(err) : resolve());`,
+    `  });`,
+    `}`,
+  ].join("\n") + "\n"
 );
 
 // Write .vc-config.json for the function
@@ -71,6 +78,7 @@ await writeFile(
     handler: "index.mjs",
     launcherType: "Nodejs",
     shouldAddHelpers: true,
+    supportsResponseStreaming: false,
   })
 );
 
