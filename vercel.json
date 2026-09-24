@@ -1,6 +1,7 @@
 {
   "version": 2,
   "installCommand": "pnpm install --no-frozen-lockfile",
+  "buildCommand": "cd artifacts/api-server && pnpm build && cd ../document-vault && pnpm run vercel-build",
   "builds": [
     {
       "src": "artifacts/document-vault/package.json",
@@ -10,12 +11,12 @@
       }
     },
     {
-      "src": "api/index.ts",
+      "src": "api/index.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/index.ts" },
+    { "src": "/api/(.*)", "dest": "/api/index.js" },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
