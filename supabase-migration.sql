@@ -2,13 +2,17 @@
 -- Run this once in the Supabase SQL editor or via psql
 
 CREATE TABLE IF NOT EXISTS users (
-  id           TEXT PRIMARY KEY,
-  name         TEXT NOT NULL,
-  email        TEXT NOT NULL UNIQUE,
-  password_hash TEXT NOT NULL,
-  role         TEXT NOT NULL DEFAULT 'USER',
-  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  id             TEXT PRIMARY KEY,
+  name           TEXT NOT NULL,
+  email          TEXT NOT NULL UNIQUE,
+  password_hash  TEXT NOT NULL,
+  role           TEXT NOT NULL DEFAULT 'USER',
+  email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Add email_verified if the table already exists (idempotent)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT FALSE;
 
 CREATE TABLE IF NOT EXISTS otps (
   id         TEXT PRIMARY KEY,

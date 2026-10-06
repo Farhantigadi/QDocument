@@ -1,15 +1,11 @@
 import nodemailer from "nodemailer";
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
-
-const FROM = `Haven <${process.env.SMTP_USER}>`;
-const isDev = process.env.NODE_ENV !== "production";
+// Read credentials lazily so env is always fully loaded
+function getSmtp() {
+  const user = process.env.SMTP_USER ?? "";
+  const pass = (process.env.SMTP_PASS ?? "").replace(/\s/g, "");
+  return { user, pass };
+}
 
 function otpEmailHtml(heading: string, body: string, code: string): string {
   return `<!DOCTYPE html>
@@ -41,12 +37,28 @@ function otpEmailHtml(heading: string, body: string, code: string): string {
 </html>`;
 }
 
-async function sendEmail(to: string, subject: string, html: string): Promise<void> {
-  if (isDev && (!process.env.SMTP_USER || !process.env.SMTP_PASS)) {
-    console.log(`\n[DEV] ✉️  Would send to ${to}\nSubject: ${subject}\n`);
+async function sendEmail(to: string, subject: string, html: string, code: string): Promise<void> {
+  const { user, pass } = getSmtp();
+
+  // Always log so OTP is visible in server console regardless of SMTP
+  console.log(`\n✉️  OTP for ${to} — Code: ${code}\n`);
+
+  if (!user || !pass) {
+    console.warn("SMTP_USER/SMTP_PASS not set — email not sent.");
     return;
   }
-  await transporter.sendMail({ from: FROM, to, subject, html });
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: { user, pass },
+  });
+
+  try {
+    await transporter.sendMail({ from: `Haven <${user}>`, to, subject, html });
+  } catch (err) {
+    // Log but don't throw — OTP was already logged above so dev flow still works
+    console.error("SMTP send failed:", err instanceof Error ? err.message : err);
+  }
 }
 
 export async function sendVerificationEmail(email: string, code: string): Promise<void> {
@@ -58,6 +70,7 @@ export async function sendVerificationEmail(email: string, code: string): Promis
       "Enter this code to complete your Haven account setup. It expires in 15 minutes.",
       code,
     ),
+    code,
   );
 }
 
@@ -70,5 +83,6 @@ export async function sendPasswordResetEmail(email: string, code: string): Promi
       "Enter this code to reset your Haven password. It expires in 15 minutes.",
       code,
     ),
+    code,
   );
 }

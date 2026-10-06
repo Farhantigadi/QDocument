@@ -99,6 +99,21 @@ export default function Login() {
     finally { setLoading(false); }
   };
 
+  // ── Resend forgot-password OTP (stays on forgot-verify screen) ────────────
+  const handleForgotResend = async () => {
+    reset(); setLoading(true);
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      if (res.ok) setInfo('A new code has been sent.');
+      else setError('Could not resend code. Try again.');
+    } catch { setError('Network error.'); }
+    finally { setLoading(false); }
+  };
+
   // ── Forgot password step 2: verify OTP + new password ─────────────────────
   const handleForgotVerify = async (e: React.FormEvent) => {
     e.preventDefault(); reset(); setLoading(true);
@@ -251,7 +266,7 @@ export default function Login() {
                   </label>
                   {error && <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>}
                   <Button type="submit" className="h-11 w-full" disabled={loading}>{loading ? 'Updating…' : 'Reset password'}</Button>
-                  <button type="button" onClick={() => goToMode('forgot')} className="w-full text-center text-xs text-muted-foreground hover:text-accent">Resend code</button>
+                  <button type="button" onClick={handleForgotResend} disabled={loading} className="w-full text-center text-xs text-muted-foreground hover:text-accent">Resend code</button>
                 </form>
               </>
             )}

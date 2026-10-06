@@ -67,10 +67,13 @@ router.post("/auth/signup/request", async (req, res) => {
   const passwordHash = await bcrypt.hash(password, 10);
   const code = generateOtp();
 
-  // Invalidate old pending OTPs
+  // Invalidate old pending OTPs for both the real email and the pending: marker
   await db.update(schema.otpTable)
     .set({ consumed: true })
     .where(and(eq(schema.otpTable.email, normalizedEmail), eq(schema.otpTable.consumed, false)));
+  await db.update(schema.otpTable)
+    .set({ consumed: true })
+    .where(and(eq(schema.otpTable.email, `pending:${normalizedEmail}`), eq(schema.otpTable.consumed, false)));
 
   // Store pending signup data in OTP row (label = JSON payload)
   await db.insert(schema.otpTable).values({
