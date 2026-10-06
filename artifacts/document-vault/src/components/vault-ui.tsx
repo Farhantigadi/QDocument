@@ -13,7 +13,9 @@ import {
   Link2,
   LogOut,
   Menu,
+  MessageSquare,
   Plus,
+  Send,
   Settings,
   ShieldCheck,
   Sparkles,
@@ -388,6 +390,93 @@ export function DocumentDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   );
 }
 
+function FeedbackDialog() {
+  const { data: session } = useGetSession();
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState('');
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!message.trim()) return;
+    setStatus('sending');
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: message.trim() }),
+      });
+      if (!res.ok) throw new Error();
+      setStatus('sent');
+      setMessage('');
+    } catch {
+      setStatus('error');
+    }
+  };
+
+  const handleOpenChange = (val: boolean) => {
+    setOpen(val);
+    if (!val) { setStatus('idle'); setMessage(''); }
+  };
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="hidden sm:flex items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-muted-foreground shadow-xs hover:text-foreground hover:border-primary/40 transition-colors"
+        data-testid="button-feedback-trigger"
+      >
+        <MessageSquare className="h-3.5 w-3.5" /> Feedback
+      </button>
+
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="rounded-3xl border-card-border bg-card p-6 sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="display-title text-xl">Share Feedback</DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Report a bug, suggest a feature, or just say hello.
+            </DialogDescription>
+          </DialogHeader>
+
+          {status === 'sent' ? (
+            <div className="flex flex-col items-center gap-3 py-6 text-center">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500">
+                <Check className="h-6 w-6" />
+              </span>
+              <p className="text-sm font-semibold text-foreground">Message received — thank you!</p>
+              <p className="text-xs text-muted-foreground">We'll get back to you at <strong>{session?.user?.email}</strong> if needed.</p>
+              <button onClick={() => setStatus('idle')} className="mt-1 text-xs font-semibold text-primary hover:underline">Send another</button>
+            </div>
+          ) : (
+            <form onSubmit={submit} className="mt-2 space-y-4">
+              <Textarea
+                value={message}
+                onChange={(e) => { setMessage(e.target.value); if (status === 'error') setStatus('idle'); }}
+                placeholder="What's on your mind?"
+                maxLength={2000}
+                className="min-h-[120px] resize-none rounded-xl text-sm"
+                data-testid="input-feedback-dialog"
+                autoFocus
+              />
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-[11px] text-muted-foreground">{message.length} / 2000</span>
+                <div className="flex items-center gap-3">
+                  {status === 'error' && <p className="text-xs text-destructive">Failed to send. Try again.</p>}
+                  <Button type="submit" size="sm" disabled={status === 'sending' || !message.trim()} className="rounded-xl">
+                    <Send className="h-3.5 w-3.5 mr-1.5" />
+                    {status === 'sending' ? 'Sending…' : 'Send'}
+                  </Button>
+                </div>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/documents', label: 'Documents', icon: FolderOpen },
@@ -521,7 +610,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className="flex items-center gap-2.5">
             <ThemeToggle />
-            <div className="hidden items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-muted-foreground shadow-xs lg:flex">
+            <FeedbackDialog />
+            <div className="hidden items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-muted-foreground shadow-xs lg:flex" title="Your passwords are encrypted with AES-256-GCM — the same standard used by banks and governments. Even we cannot read your data.">
               <ShieldCheck className="h-4 w-4 text-emerald-500" /> AES-256 Protected
             </div>
             <Link

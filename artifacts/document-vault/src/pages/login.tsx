@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'wouter';
+import { useLocation, Link } from 'wouter';
 import { useQueryClient } from '@tanstack/react-query';
 import { KeyRound, ShieldCheck, Lock, Mail, User as UserIcon, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useGetSession, getGetSessionQueryKey } from '@workspace/api-client-react';
@@ -168,11 +168,14 @@ export default function Login() {
         {/* Right Form Panel */}
         <div className="flex flex-col justify-center p-6 sm:p-10 lg:p-14">
           {/* Mobile Brand Header */}
-          <div className="flex items-center gap-3 md:hidden mb-6">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-              <KeyRound className="h-5 w-5" />
-            </span>
-            <span className="display-title text-2xl font-bold">Haven</span>
+          <div className="flex items-center justify-between gap-3 md:hidden mb-6">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+                <KeyRound className="h-5 w-5" />
+              </span>
+              <span className="display-title text-2xl font-bold">Haven</span>
+            </div>
+            <Link href="/" className="text-xs font-semibold text-muted-foreground hover:text-foreground">← Home</Link>
           </div>
 
           <div className="mx-auto w-full max-w-md">

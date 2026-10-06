@@ -8,6 +8,7 @@ import Admin from '@/pages/admin';
 import Dashboard from '@/pages/dashboard';
 import DocumentDetail from '@/pages/document-detail';
 import Documents from '@/pages/documents';
+import Landing from '@/pages/landing';
 import Login from '@/pages/login';
 import NotFound from '@/pages/not-found';
 import Settings from '@/pages/settings';
@@ -20,9 +21,11 @@ function HomeRedirect() {
   const [, setLocation] = useLocation();
   const { data, isLoading } = useGetSession();
   useEffect(() => {
-    if (!isLoading) setLocation(data?.authenticated ? '/dashboard' : '/login');
+    if (!isLoading && data?.authenticated) setLocation('/dashboard');
   }, [data?.authenticated, isLoading, setLocation]);
-  return <div className="flex min-h-[100dvh] items-center justify-center bg-background"><div className="skeleton h-2 w-24 rounded-full" data-testid="loading-home" /></div>;
+  if (isLoading) return <div className="flex min-h-[100dvh] items-center justify-center bg-background"><div className="skeleton h-2 w-24 rounded-full" data-testid="loading-home" /></div>;
+  if (data?.authenticated) return null;
+  return <Landing />;
 }
 
 function AdminRoute() {

@@ -86,3 +86,32 @@ export async function sendPasswordResetEmail(email: string, code: string): Promi
     code,
   );
 }
+
+export async function sendFeedbackEmail({ fromName, fromEmail, message }: {
+  fromName: string;
+  fromEmail: string;
+  message: string;
+}): Promise<void> {
+  const { user, pass } = getSmtp();
+  console.log(`\n📬 Feedback from ${fromName} <${fromEmail}>:\n${message}\n`);
+  if (!user || !pass) return;
+
+  const transporter = nodemailer.createTransport({ service: "gmail", auth: { user, pass } });
+  const html = `<!DOCTYPE html><html><body style="font-family:sans-serif;padding:24px;max-width:600px">
+    <h2 style="margin:0 0 4px">New Haven Feedback</h2>
+    <p style="margin:0 0 16px;color:#71717a;font-size:13px">From <strong>${fromName}</strong> &lt;${fromEmail}&gt;</p>
+    <div style="background:#f4f4f5;border-radius:10px;padding:16px 20px;font-size:15px;line-height:1.6;white-space:pre-wrap">${message}</div>
+  </body></html>`;
+
+  try {
+    await transporter.sendMail({
+      from: `Haven Feedback <${user}>`,
+      to: user,
+      replyTo: fromEmail,
+      subject: `Haven feedback from ${fromName}`,
+      html,
+    });
+  } catch (err) {
+    console.error("Feedback email failed:", err instanceof Error ? err.message : err);
+  }
+}

@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Check, Clipboard, KeyRound, LockKeyhole, LogOut, Mail, ShieldCheck, SlidersHorizontal } from 'lucide-react';
+import { Check, Clipboard, KeyRound, LockKeyhole, LogOut, Mail, MessageSquare, Send, ShieldCheck } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useQueryClient } from '@tanstack/react-query';
-import { getGetSessionQueryKey, useGetDashboardSummary, useGetSession, useLogout } from '@workspace/api-client-react';
+import { getGetSessionQueryKey, useGetSession, useLogout } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
-import { formatBytes, initials, QueryState } from '@/components/vault-ui';
+import { Textarea } from '@/components/ui/textarea';
+import { initials } from '@/components/vault-ui';
 
 function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (checked: boolean) => void; label: string }) {
   return (
@@ -31,11 +32,31 @@ export default function Settings() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { data: session, isLoading: sessionLoading, error: sessionError, refetch } = useGetSession();
-  const summary = useGetDashboardSummary();
   const logout = useLogout();
   const [persistent, setPersistent] = useState(true);
   const [activity, setActivity] = useState(true);
   const [notice, setNotice] = useState('');
+  const [feedback, setFeedback] = useState('');
+  const [feedbackStatus, setFeedbackStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+
+  const submitFeedback = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!feedback.trim()) return;
+    setFeedbackStatus('sending');
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: feedback.trim() }),
+      });
+      if (!res.ok) throw new Error();
+      setFeedbackStatus('sent');
+      setFeedback('');
+    } catch {
+      setFeedbackStatus('error');
+    }
+  };
 
   const signOut = () =>
     logout.mutate(undefined, {
@@ -169,52 +190,63 @@ export default function Settings() {
           </div>
         </section>
 
-        {/* Storage Allowance */}
-        <section className="vault-card-surface rounded-2xl" data-testid="section-storage-settings">
+        {/* Feedback */}
+        <section className="vault-card-surface overflow-hidden rounded-2xl" data-testid="section-feedback-settings">
           <div className="border-b border-border px-6 py-5">
             <div className="flex items-center gap-3">
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary text-primary">
-                <SlidersHorizontal className="h-5 w-5" />
+                <MessageSquare className="h-5 w-5" />
               </span>
               <div>
-                <h2 className="display-title text-lg text-foreground">Storage Allowance</h2>
-                <p className="text-xs text-muted-foreground">Your space allocation and current usage.</p>
+                <h2 className="display-title text-lg text-foreground">Share Feedback</h2>
+                <p className="text-xs text-muted-foreground">Report a bug, suggest a feature, or just say hello.</p>
               </div>
             </div>
           </div>
 
-          <QueryState
-            loading={summary.isLoading}
-            error={summary.error}
-            onRetry={() => void summary.refetch()}
-            empty={<div className="p-6 text-xs text-muted-foreground" data-testid="empty-storage">Storage details will appear when connected.</div>}
-          />
-
-          {summary.data && (
-            <div className="p-6">
-              <div className="flex items-end justify-between">
-                <div>
-                  <p className="text-2xl font-extrabold text-foreground" data-testid="text-settings-storage-used">
-                    {formatBytes(summary.data.storageUsedBytes)}
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    of {formatBytes(summary.data.storageLimitBytes)} total allowance used
-                  </p>
-                </div>
-                <span className="font-mono text-xs font-bold text-accent">
-                  {Math.round((summary.data.storageUsedBytes / Math.max(summary.data.storageLimitBytes, 1)) * 100)}%
+          <div className="p-6">
+            {feedbackStatus === 'sent' ? (
+              <div className="flex flex-col items-center gap-3 py-4 text-center">
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500">
+                  <Check className="h-6 w-6" />
                 </span>
+                <p className="text-sm font-semibold text-foreground">Message received — thank you!</p>
+                <p className="text-xs text-muted-foreground">We'll get back to you at <strong>{session?.user?.email}</strong> if needed.</p>
+                <button onClick={() => setFeedbackStatus('idle')} className="mt-1 text-xs font-semibold text-primary hover:underline">
+                  Send another message
+                </button>
               </div>
-              <div className="mt-4 h-2.5 rounded-full bg-muted overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-accent transition-all duration-700"
-                  style={{
-                    width: `${Math.min(100, (summary.data.storageUsedBytes / Math.max(summary.data.storageLimitBytes, 1)) * 100)}%`,
-                  }}
+            ) : (
+              <form onSubmit={submitFeedback} className="space-y-4">
+                <Textarea
+                  value={feedback}
+                  onChange={(e) => { setFeedback(e.target.value); if (feedbackStatus === 'error') setFeedbackStatus('idle'); }}
+                  placeholder="What's on your mind? A bug, a suggestion, or anything else…"
+                  maxLength={2000}
+                  className="min-h-[120px] resize-none rounded-xl text-sm"
+                  data-testid="input-feedback"
                 />
-              </div>
-            </div>
-          )}
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-[11px] text-muted-foreground">{feedback.length} / 2000</span>
+                  <div className="flex items-center gap-3">
+                    {feedbackStatus === 'error' && (
+                      <p className="text-xs text-destructive">Failed to send. Please try again.</p>
+                    )}
+                    <Button
+                      type="submit"
+                      size="sm"
+                      disabled={feedbackStatus === 'sending' || !feedback.trim()}
+                      className="rounded-xl"
+                      data-testid="button-send-feedback"
+                    >
+                      <Send className="h-3.5 w-3.5 mr-1.5" />
+                      {feedbackStatus === 'sending' ? 'Sending…' : 'Send message'}
+                    </Button>
+                  </div>
+                </div>
+              </form>
+            )}
+          </div>
         </section>
 
         {/* End Session */}
