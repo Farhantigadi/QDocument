@@ -5,6 +5,7 @@ import documentsRouter from "./documents";
 import dashboardRouter from "./dashboard";
 import adminRouter from "./admin";
 import storageRouter from "./storage";
+import vaultRouter from "./vault";
 
 const router: IRouter = Router();
 
@@ -14,5 +15,6 @@ router.use(documentsRouter);
 router.use(dashboardRouter);
 router.use(adminRouter);
 router.use(storageRouter);
+router.use(vaultRouter);
 
 export default router;
