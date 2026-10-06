@@ -1,240 +1,400 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'wouter';
-import { FileText, KeyRound, Lock, ShieldCheck, Smartphone, Eye, FolderOpen, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ArrowRight, KeyRound, Lock, ShieldCheck } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 
-function useInView(threshold = 0.15) {
+/* Reads dark mode from <html> class and re-renders on change */
+function useDark() {
+  const [dk, setDk] = useState(() => document.documentElement.classList.contains('dark'));
+  useEffect(() => {
+    const obs = new MutationObserver(() =>
+      setDk(document.documentElement.classList.contains('dark'))
+    );
+    obs.observe(document.documentElement, { attributeFilter: ['class'] });
+    return () => obs.disconnect();
+  }, []);
+  return dk;
+}
+
+function useReveal() {
   const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
+  const [on, setOn] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold });
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) setOn(true); },
+      { threshold: 0.08 }
+    );
     obs.observe(el);
     return () => obs.disconnect();
-  }, [threshold]);
-  return { ref, visible };
+  }, []);
+  return { ref, on };
 }
 
-function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
-  const { ref, visible } = useInView();
+function Reveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const { ref, on } = useReveal();
   return (
     <div
       ref={ref}
-      style={{ transitionDelay: `${delay}ms` }}
-      className={`transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+      style={{
+        transitionDelay: `${delay}ms`,
+        transitionDuration: '800ms',
+        transitionTimingFunction: 'cubic-bezier(0.16,1,0.3,1)',
+        transitionProperty: 'opacity, transform',
+        opacity: on ? 1 : 0,
+        transform: on ? 'none' : 'translateY(20px)',
+      }}
     >
       {children}
     </div>
   );
 }
 
-const features = [
-  {
-    icon: FolderOpen,
-    title: 'Document Vault',
-    desc: 'Store passports, insurance policies, leases, certificates — anything important. Link Google Drive files or upload directly.',
-  },
-  {
-    icon: KeyRound,
-    title: 'Password Manager',
-    desc: 'Save website logins and credentials. Passwords are locked away and only revealed when you ask for them.',
-  },
-  {
-    icon: Lock,
-    title: 'Military-Grade Encryption',
-    desc: 'Every password is scrambled using AES-256-GCM — the same standard banks and governments use. Even we cannot read your data.',
-  },
-  {
-    icon: Eye,
-    title: 'Reveal on Demand',
-    desc: 'Passwords stay hidden by default. Tap the eye icon to reveal a password only when you need it.',
-  },
-  {
-    icon: Smartphone,
-    title: 'Works on Any Device',
-    desc: 'Designed mobile-first. Access your vault from your phone, tablet, or desktop — it looks great everywhere.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Email Verification',
-    desc: 'Every new account is verified with a one-time code sent to your email. No unverified accounts are ever stored.',
-  },
-];
+const IMG_HERO    = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1600&q=85&auto=format&fit=crop';
+const IMG_FEATURE = 'https://images.unsplash.com/photo-1633265486064-086b219458ec?w=1200&q=80&auto=format&fit=crop';
+const IMG_MOBILE  = 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=900&q=80&auto=format&fit=crop';
 
 export default function Landing() {
+  const dk = useDark();
+
+  const bg       = dk ? '#0a0a0a' : '#ffffff';
+  const bgAlt    = dk ? '#111111' : '#f5f5f7';
+  const fg       = dk ? '#f5f5f7' : '#1d1d1f';
+  const fgMuted  = dk ? '#86868b' : '#6e6e73';
+  const fgDim    = dk ? '#48484a' : '#aeaeb2';
+  const border   = dk ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+  const navBg    = dk ? 'rgba(10,10,10,0.75)' : 'rgba(255,255,255,0.75)';
+  const pillBg   = dk ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
+  const pillBorder = dk ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)';
+  const btnPrimBg  = dk ? '#f5f5f7' : '#1d1d1f';
+  const btnPrimFg  = dk ? '#0a0a0a' : '#ffffff';
+  const btnSecBg   = dk ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
+  const btnSecFg   = dk ? '#f5f5f7' : '#1d1d1f';
+  const gridLine   = dk ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  const cardBg     = dk ? '#111111' : '#ffffff';
+  const tagBg      = dk ? 'rgba(255,255,255,0.06)' : '#ffffff';
+  const heroImgOp  = dk ? 0.06 : 0.07;
+  const heroGrad   = dk
+    ? 'linear-gradient(to bottom, rgba(10,10,10,0) 0%, rgba(10,10,10,0.6) 60%, #0a0a0a 100%)'
+    : 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 60%, #ffffff 100%)';
+  const featGrad = dk
+    ? 'linear-gradient(to right, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.5) 55%, rgba(10,10,10,0) 100%)'
+    : 'linear-gradient(to right, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.5) 55%, rgba(255,255,255,0) 100%)';
+  const mobGrad = dk
+    ? 'linear-gradient(to left, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.5) 55%, rgba(10,10,10,0) 100%)'
+    : 'linear-gradient(to left, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.5) 55%, rgba(255,255,255,0) 100%)';
+
+  const F = { fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif' };
+
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground">
+    <div style={{ ...F, background: bg, color: fg, minHeight: '100dvh', overflowX: 'hidden' }}>
 
-      {/* ── Nav ── */}
-      <nav className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border/60 bg-background/90 px-5 backdrop-blur-md sm:px-8">
-        <div className="flex items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-            <KeyRound className="h-4 w-4" />
-          </span>
-          <span className="display-title text-xl font-extrabold">Haven</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <Link href="/login">
-            <Button size="sm" className="rounded-xl">Sign in</Button>
-          </Link>
-        </div>
-      </nav>
-
-      {/* ── Hero ── */}
-      <section className="mx-auto max-w-3xl px-5 pb-16 pt-16 text-center sm:pt-24 sm:pb-24">
-        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-semibold text-muted-foreground shadow-sm">
-          <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-          AES-256-GCM Encrypted · Free to use
-        </div>
-
-        <h1 className="display-title mt-6 text-4xl font-extrabold leading-[1.08] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-          Everything important,<br />
-          <span className="text-primary">in one quiet place.</span>
-        </h1>
-
-        <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-          Haven is your private vault for documents and passwords. Store them securely, find them instantly, and never worry about losing something important again.
-        </p>
-
-        <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          <Link href="/login">
-            <Button size="lg" className="w-full rounded-xl sm:w-auto">
-              Get started free <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
-          <Link href="/login">
-            <Button size="lg" variant="outline" className="w-full rounded-xl sm:w-auto">
-              Sign in to your vault
-            </Button>
-          </Link>
-        </div>
-
-        {/* Social proof strip */}
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-emerald-500" /> Bank-level encryption</span>
-          <span className="flex items-center gap-1.5"><Lock className="h-3.5 w-3.5 text-primary" /> Passwords never stored in plain text</span>
-          <span className="flex items-center gap-1.5"><FileText className="h-3.5 w-3.5 text-primary" /> Documents + credentials in one place</span>
-        </div>
-      </section>
-
-      {/* ── What is AES-256? ── */}
-      <section className="border-y border-border bg-card">
-        <div className="mx-auto max-w-3xl px-5 py-12 sm:py-16">
-          <FadeIn>
-            <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500">
-                <Lock className="h-8 w-8" />
-              </div>
-              <div>
-                <p className="eyebrow-text text-emerald-500">What does "AES-256 Protected" mean?</p>
-                <h2 className="display-title mt-1 text-2xl font-bold text-foreground sm:text-3xl">
-                  Your passwords are scrambled — permanently.
-                </h2>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                  AES-256 is an encryption standard used by banks, governments, and the military. When you save a password in Haven, it is instantly scrambled into unreadable code before it ever touches our database. Even if someone broke into our servers, they would see nothing but gibberish. Only you — with your active session — can unscramble and read your passwords.
-                </p>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Think of it like a safe deposit box where only your key works — and we never hold a copy of your key.
-                </p>
-              </div>
-            </div>
-          </FadeIn>
-        </div>
-      </section>
-
-      {/* ── Features ── */}
-      <section className="mx-auto max-w-5xl px-5 py-16 sm:py-24">
-        <FadeIn>
-          <div className="text-center">
-            <p className="eyebrow-text text-primary">Everything you need</p>
-            <h2 className="display-title mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">
-              Built for real life, not just tech people.
-            </h2>
-            <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
-              Haven is designed so anyone can use it — no technical knowledge required.
-            </p>
+      {/* ── NAV: floating rounded pill, blur, gap from top ── */}
+      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, padding: '14px 20px' }}>
+        <div style={{
+          maxWidth: 960,
+          margin: '0 auto',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          height: 56,
+          padding: '0 20px',
+          borderRadius: 18,
+          border: `1px solid ${border}`,
+          background: navBg,
+          backdropFilter: 'saturate(180%) blur(24px)',
+          WebkitBackdropFilter: 'saturate(180%) blur(24px)',
+          boxShadow: dk
+            ? '0 8px 32px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.04) inset'
+            : '0 8px 32px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.8) inset',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, borderRadius: 9, background: fg }}>
+              <KeyRound style={{ width: 14, height: 14, color: bg }} />
+            </span>
+            <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: '-0.02em', color: fg }}>Haven</span>
           </div>
-        </FadeIn>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <ThemeToggle />
+            <Link href="/login">
+              <span style={{ fontSize: 13, fontWeight: 400, color: fgMuted, cursor: 'pointer', letterSpacing: '-0.01em', padding: '6px 12px', borderRadius: 10, transition: 'color 0.2s' }}
+                onMouseEnter={e => (e.currentTarget.style.color = fg)}
+                onMouseLeave={e => (e.currentTarget.style.color = fgMuted)}>
+                Sign in
+              </span>
+            </Link>
+            <Link href="/login">
+              <span style={{ fontSize: 13, fontWeight: 500, color: btnPrimFg, background: btnPrimBg, cursor: 'pointer', letterSpacing: '-0.01em', padding: '7px 16px', borderRadius: 10, transition: 'opacity 0.2s', display: 'inline-block' }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = '0.8')}
+                onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
+                Get started
+              </span>
+            </Link>
+          </div>
+        </div>
+      </header>
 
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map((f, i) => (
-            <FadeIn key={f.title} delay={i * 60}>
-              <div className="vault-card-surface flex flex-col gap-3 rounded-2xl p-5 h-full">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <f.icon className="h-5 w-5" />
-                </div>
-                <h3 className="display-title text-base font-bold text-foreground">{f.title}</h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
-              </div>
-            </FadeIn>
-          ))}
+      {/* ── HERO ── */}
+      <section style={{ position: 'relative', minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: '84px 20px 60px' }}>
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+          <img src={IMG_HERO} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: heroImgOp, filter: 'grayscale(100%)' }} />
+          {/* grid pattern */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            backgroundImage: `linear-gradient(${dk ? 'rgba(255,255,255,0.09)' : 'rgba(0,0,0,0.10)'} 1px, transparent 1px), linear-gradient(90deg, ${dk ? 'rgba(255,255,255,0.09)' : 'rgba(0,0,0,0.10)'} 1px, transparent 1px)`,
+            backgroundSize: '48px 48px',
+            WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 40%, transparent 100%)',
+            maskImage: 'linear-gradient(to bottom, black 0%, black 40%, transparent 100%)',
+          }} />
+          <div style={{ position: 'absolute', inset: 0, background: heroGrad }} />
+        </div>
+
+        <div style={{ position: 'relative', zIndex: 10, maxWidth: 680, textAlign: 'center' }}>
+          <div className="landing-fade-up" style={{ animationDelay: '0ms', marginBottom: 28 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 999, border: `1px solid ${pillBorder}`, background: pillBg, padding: '5px 14px', fontSize: 12, fontWeight: 500, color: fgMuted, letterSpacing: '-0.01em' }}>
+              <ShieldCheck style={{ width: 12, height: 12, color: fg }} />
+              AES-256-GCM encrypted
+            </span>
+          </div>
+
+          <h1 className="landing-fade-up" style={{ animationDelay: '80ms', fontSize: 'clamp(40px, 7vw, 78px)', fontWeight: 700, lineHeight: 1.04, letterSpacing: '-0.04em', color: fg, margin: 0 }}>
+            Your private vault<br />
+            <span style={{ color: fgMuted, fontWeight: 300, fontStyle: 'italic' }}>for everything that matters.</span>
+          </h1>
+
+          <p className="landing-fade-up" style={{ animationDelay: '160ms', marginTop: 24, fontSize: 17, fontWeight: 400, lineHeight: 1.6, color: fgMuted, letterSpacing: '-0.01em', maxWidth: 460, margin: '24px auto 0' }}>
+            Documents. Passwords. Certificates. All encrypted, all private, all in one place.
+          </p>
+
+          <div className="landing-fade-up" style={{ animationDelay: '240ms', marginTop: 36, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            <Link href="/login">
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, borderRadius: 999, padding: '13px 28px', fontSize: 15, fontWeight: 500, color: btnPrimFg, background: btnPrimBg, cursor: 'pointer', letterSpacing: '-0.01em', transition: 'opacity 0.2s' }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = '0.82')}
+                onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
+                Create your vault <ArrowRight style={{ width: 15, height: 15 }} />
+              </span>
+            </Link>
+            <Link href="/login">
+              <span style={{ display: 'inline-flex', alignItems: 'center', borderRadius: 999, border: `1px solid ${pillBorder}`, background: btnSecBg, padding: '13px 28px', fontSize: 15, fontWeight: 500, color: btnSecFg, cursor: 'pointer', letterSpacing: '-0.01em', transition: 'opacity 0.2s' }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = '0.7')}
+                onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
+                Sign in
+              </span>
+            </Link>
+          </div>
+
+          <p className="landing-fade-up" style={{ animationDelay: '320ms', marginTop: 22, fontSize: 12, color: fgDim, letterSpacing: '-0.01em' }}>
+            Free forever · No credit card · Zero plain-text storage
+          </p>
+        </div>
+
+        <div style={{ position: 'absolute', bottom: 36, left: '50%', transform: 'translateX(-50%)' }} className="pulse-slow">
+          <div style={{ width: 1, height: 40, background: `linear-gradient(to bottom, ${fgDim}, transparent)` }} />
         </div>
       </section>
 
-      {/* ── How it works ── */}
-      <section className="border-t border-border bg-card">
-        <div className="mx-auto max-w-3xl px-5 py-16 sm:py-20">
-          <FadeIn>
-            <div className="text-center">
-              <p className="eyebrow-text text-primary">Simple by design</p>
-              <h2 className="display-title mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">
-                Up and running in 3 steps.
-              </h2>
-            </div>
-          </FadeIn>
+      {/* ── STATEMENT ── */}
+      <section style={{ borderTop: `1px solid ${border}`, padding: '96px 20px' }}>
+        <Reveal>
+          <p style={{ maxWidth: 820, margin: '0 auto', textAlign: 'center', fontSize: 'clamp(24px, 4vw, 42px)', fontWeight: 300, lineHeight: 1.2, letterSpacing: '-0.03em', color: fg }}>
+            Most people store passwords in notes apps and documents in email threads.{' '}
+            <span style={{ fontWeight: 600 }}>Haven fixes that.</span>
+          </p>
+        </Reveal>
+      </section>
 
-          <div className="mt-10 space-y-6">
+      {/* ── FEATURE IMAGE ── */}
+      <section style={{ position: 'relative', overflow: 'hidden', height: 'clamp(300px, 48vw, 580px)', borderTop: `1px solid ${border}` }}>
+        <img src={IMG_FEATURE} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(20%)', opacity: dk ? 0.5 : 0.88 }} />
+        <div style={{ position: 'absolute', inset: 0, background: featGrad }} />
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}>
+          <Reveal>
+            <div style={{ maxWidth: 400, padding: '0 40px' }}>
+              <p style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: fgMuted }}>Security</p>
+              <h2 style={{ marginTop: 12, fontSize: 'clamp(26px, 3.5vw, 40px)', fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.08, color: fg }}>
+                Encrypted before it leaves your device.
+              </h2>
+              <p style={{ marginTop: 14, fontSize: 15, lineHeight: 1.7, color: fgMuted, fontWeight: 400 }}>
+                AES-256-GCM. The same standard used by banks and governments. Even we cannot read your passwords.
+              </p>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── THREE PILLARS ── */}
+      <section style={{ borderTop: `1px solid ${border}`, padding: '96px 20px' }}>
+        <div style={{ maxWidth: 960, margin: '0 auto' }}>
+          <Reveal>
+            <p style={{ textAlign: 'center', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: fgMuted, marginBottom: 56 }}>
+              What Haven does
+            </p>
+          </Reveal>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 1, background: gridLine, borderRadius: 20, overflow: 'hidden' }}>
             {[
-              { step: '01', title: 'Create your account', desc: 'Sign up with your email. We send a one-time code to verify it\'s really you — no unverified accounts are ever saved.' },
-              { step: '02', title: 'Add your documents & passwords', desc: 'Paste a Google Drive link, upload a file, or type in a password. Haven organises everything automatically.' },
-              { step: '03', title: 'Access from anywhere', desc: 'Open Haven on your phone or computer. Your vault is always there, always encrypted, always private.' },
-            ].map((item, i) => (
-              <FadeIn key={item.step} delay={i * 80}>
-                <div className="flex gap-5">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground font-mono text-sm font-bold shadow-sm">
-                    {item.step}
-                  </div>
-                  <div className="pt-1">
-                    <h3 className="display-title text-base font-bold text-foreground">{item.title}</h3>
-                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.desc}</p>
+              { n: '01', title: 'Document Vault', body: 'Passports, leases, insurance, certificates. Link Google Drive files or paste any URL. Organised by category, found in seconds.' },
+              { n: '02', title: 'Password Manager', body: 'Save credentials encrypted at rest. Passwords are hidden by default — revealed only when you explicitly ask for them.' },
+              { n: '03', title: 'Zero-knowledge', body: 'Your data is encrypted with a key only your session holds. We store ciphertext. Nothing is readable without you.' },
+            ].map((p, i) => (
+              <Reveal key={p.n} delay={i * 80}>
+                <div style={{ background: cardBg, padding: '36px 32px 40px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 11, fontWeight: 500, color: fgDim, letterSpacing: '0.06em' }}>{p.n}</span>
+                  <div style={{ marginTop: 48 }}>
+                    <h3 style={{ fontSize: 19, fontWeight: 600, letterSpacing: '-0.025em', color: fg, lineHeight: 1.2 }}>{p.title}</h3>
+                    <p style={{ marginTop: 10, fontSize: 14, lineHeight: 1.7, color: fgMuted }}>{p.body}</p>
                   </div>
                 </div>
-              </FadeIn>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── CTA ── */}
-      <section className="mx-auto max-w-2xl px-5 py-16 text-center sm:py-24">
-        <FadeIn>
-          <h2 className="display-title text-3xl font-extrabold text-foreground sm:text-4xl">
-            Ready to secure your life?
-          </h2>
-          <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-muted-foreground">
-            Join Haven and keep your most important documents and passwords safe, organised, and always within reach.
-          </p>
-          <Link href="/login">
-            <Button size="lg" className="mt-7 rounded-xl px-8">
-              Create your free vault <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
-        </FadeIn>
+      {/* ── ENCRYPTION EXPLAINER ── */}
+      <section style={{ borderTop: `1px solid ${border}`, background: bgAlt, padding: '96px 20px' }}>
+        <div style={{ maxWidth: 960, margin: '0 auto', display: 'grid', gap: 56, gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', alignItems: 'start' }}>
+          <Reveal>
+            <p style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: fgMuted }}>How it works</p>
+            <h2 style={{ marginTop: 14, fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.1, color: fg }}>
+              What "AES-256 Protected" actually means.
+            </h2>
+            <p style={{ marginTop: 18, fontSize: 15, lineHeight: 1.8, color: fgMuted }}>
+              When you save a password, Haven scrambles it into unreadable ciphertext before it ever reaches our database. The scrambling key lives only in your active session — not on our servers.
+            </p>
+            <p style={{ marginTop: 12, fontSize: 15, lineHeight: 1.8, color: fgMuted }}>
+              Think of it as a safe deposit box where only your key works. We hold the box. We never hold the key.
+            </p>
+            <div style={{ marginTop: 24, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {['AES-256-GCM', 'iv · authTag · ciphertext', 'HttpOnly cookie', 'Zero plain-text'].map((t) => (
+                <span key={t} style={{ borderRadius: 999, border: `1px solid ${pillBorder}`, background: tagBg, padding: '5px 12px', fontSize: 12, fontWeight: 500, color: fg, letterSpacing: '-0.01em' }}>{t}</span>
+              ))}
+            </div>
+          </Reveal>
+
+          <Reveal delay={100}>
+            <div style={{ borderRadius: 18, overflow: 'hidden', border: `1px solid ${dk ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`, background: '#1d1d1f' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '12px 16px' }}>
+                <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#ff5f57', display: 'inline-block' }} />
+                <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#febc2e', display: 'inline-block' }} />
+                <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#28c840', display: 'inline-block' }} />
+                <span style={{ marginLeft: 10, fontSize: 11, color: 'rgba(255,255,255,0.25)', fontFamily: 'DM Mono, monospace' }}>haven — encryption</span>
+              </div>
+              <div style={{ padding: '20px 20px 24px', fontFamily: 'DM Mono, monospace', fontSize: 13, lineHeight: 1.7 }}>
+                <p style={{ color: 'rgba(255,255,255,0.25)' }}>// what you type</p>
+                <p style={{ color: '#ff5f57', marginTop: 4 }}>password = "MySecretPass123!"</p>
+                <p style={{ color: 'rgba(255,255,255,0.25)', marginTop: 16 }}>// what Haven stores</p>
+                <p style={{ color: '#28c840', marginTop: 4, wordBreak: 'break-all' }}>
+                  a3f8c2d1:9f2a1c3e:<span style={{ color: 'rgba(40,200,64,0.5)' }}>7a3f9c2e1d4b8a5f2c9e3d6b1a4f7c0e2d5b8a1f</span>
+                </p>
+                <p style={{ color: 'rgba(255,255,255,0.25)', marginTop: 16 }}>// what an attacker sees</p>
+                <p style={{ color: 'rgba(255,255,255,0.12)', marginTop: 4, userSelect: 'none' }}>{'█'.repeat(28)}</p>
+                <div style={{ marginTop: 16, borderRadius: 10, border: '1px solid rgba(40,200,64,0.2)', background: 'rgba(40,200,64,0.07)', padding: '10px 14px' }}>
+                  <p style={{ color: '#28c840', fontSize: 12 }}>✓ Unreadable without your active session</p>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer className="border-t border-border px-5 py-8 text-center text-xs text-muted-foreground">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <KeyRound className="h-3.5 w-3.5" />
-          <span className="font-semibold">Haven</span>
+      {/* ── STEPS ── */}
+      <section style={{ borderTop: `1px solid ${border}`, padding: '96px 20px' }}>
+        <div style={{ maxWidth: 960, margin: '0 auto' }}>
+          <Reveal>
+            <h2 style={{ textAlign: 'center', fontSize: 'clamp(26px, 3.5vw, 40px)', fontWeight: 700, letterSpacing: '-0.035em', color: fg, marginBottom: 56 }}>
+              Up and running in minutes.
+            </h2>
+          </Reveal>
+          <div>
+            {[
+              { n: '1', title: 'Create your account', body: "Sign up with your email. A one-time code verifies it's really you. No unverified accounts are ever stored." },
+              { n: '2', title: 'Add your documents and passwords', body: 'Paste a Google Drive link or type in a credential. Haven organises everything by category automatically.' },
+              { n: '3', title: 'Access from anywhere, always encrypted', body: 'Open Haven on your phone or computer. Your vault is always there, always private, always yours.' },
+            ].map((s, i) => (
+              <Reveal key={s.n} delay={i * 60}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 40, padding: '32px 0', borderTop: i === 0 ? `1px solid ${border}` : undefined, borderBottom: `1px solid ${border}` }}>
+                  <span style={{ flexShrink: 0, fontSize: 13, fontWeight: 500, color: fgDim, minWidth: 16, paddingTop: 2 }}>{s.n}</span>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ fontSize: 17, fontWeight: 600, letterSpacing: '-0.025em', color: fg }}>{s.title}</h3>
+                    <p style={{ marginTop: 6, fontSize: 14, lineHeight: 1.7, color: fgMuted }}>{s.body}</p>
+                  </div>
+                  <Lock style={{ width: 15, height: 15, flexShrink: 0, color: fgDim, marginTop: 3 }} />
+                </div>
+              </Reveal>
+            ))}
+          </div>
         </div>
-        <p>Your documents and passwords, encrypted and private.</p>
-        <p className="mt-1 flex items-center justify-center gap-1.5">
-          <ShieldCheck className="h-3 w-3 text-emerald-500" /> AES-256-GCM encrypted · Sessions are HttpOnly and secure
-        </p>
+      </section>
+
+      {/* ── MOBILE IMAGE ── */}
+      <section style={{ position: 'relative', overflow: 'hidden', height: 'clamp(280px, 44vw, 540px)', borderTop: `1px solid ${border}` }}>
+        <img src={IMG_MOBILE} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(15%)', opacity: dk ? 0.5 : 0.85 }} />
+        <div style={{ position: 'absolute', inset: 0, background: mobGrad }} />
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+          <Reveal>
+            <div style={{ maxWidth: 360, padding: '0 40px', textAlign: 'right' }}>
+              <p style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: fgMuted }}>Mobile-first</p>
+              <h2 style={{ marginTop: 12, fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.1, color: fg }}>
+                Your vault in your pocket.
+              </h2>
+              <p style={{ marginTop: 10, fontSize: 14, lineHeight: 1.7, color: fgMuted }}>
+                Designed for your phone first. Large touch targets, bottom navigation, instant access.
+              </p>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── CTA ── */}
+      <section style={{ borderTop: `1px solid ${border}`, padding: '112px 20px', textAlign: 'center' }}>
+        <Reveal>
+          <h2 style={{ fontSize: 'clamp(34px, 5vw, 62px)', fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1.04, color: fg }}>
+            Everything important.<br />
+            <span style={{ fontWeight: 300, fontStyle: 'italic', color: fgMuted }}>Finally in one place.</span>
+          </h2>
+          <p style={{ maxWidth: 380, margin: '18px auto 0', fontSize: 16, lineHeight: 1.65, color: fgMuted, fontWeight: 400 }}>
+            Join Haven and keep your most important documents and passwords safe, organised, and always within reach.
+          </p>
+          <div style={{ marginTop: 36, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            <Link href="/login">
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, borderRadius: 999, padding: '14px 32px', fontSize: 15, fontWeight: 500, color: btnPrimFg, background: btnPrimBg, cursor: 'pointer', letterSpacing: '-0.01em', transition: 'opacity 0.2s' }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = '0.82')}
+                onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
+                Create your free vault <ArrowRight style={{ width: 15, height: 15 }} />
+              </span>
+            </Link>
+            <Link href="/login">
+              <span style={{ display: 'inline-flex', alignItems: 'center', borderRadius: 999, border: `1px solid ${pillBorder}`, background: btnSecBg, padding: '14px 32px', fontSize: 15, fontWeight: 500, color: btnSecFg, cursor: 'pointer', letterSpacing: '-0.01em', transition: 'opacity 0.2s' }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = '0.7')}
+                onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
+                Sign in
+              </span>
+            </Link>
+          </div>
+          <p style={{ marginTop: 20, fontSize: 12, color: fgDim, letterSpacing: '-0.01em' }}>
+            Free forever · AES-256-GCM encrypted · No credit card
+          </p>
+        </Reveal>
+      </section>
+
+      {/* ── FOOTER ── */}
+      <footer style={{ borderTop: `1px solid ${border}`, padding: '28px 20px' }}>
+        <div style={{ maxWidth: 960, margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 8, background: fg }}>
+              <KeyRound style={{ width: 12, height: 12, color: bg }} />
+            </span>
+            <span style={{ fontSize: 13, fontWeight: 500, color: fg, letterSpacing: '-0.01em' }}>Haven</span>
+          </div>
+          <p style={{ fontSize: 12, color: fgDim, letterSpacing: '-0.01em' }}>
+            Your documents and passwords, encrypted and private.
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: fgDim }}>
+            <ShieldCheck style={{ width: 13, height: 13 }} />
+            AES-256-GCM · HttpOnly sessions
+          </div>
+        </div>
       </footer>
 
     </div>
