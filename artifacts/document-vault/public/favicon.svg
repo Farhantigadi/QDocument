@@ -1,3 +1,47 @@
-<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="180" height="180" rx="36" fill="#FF3C00"/>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A" />
+      <stop offset="50%" stop-color="#1E293B" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+    <linearGradient id="shield-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="50%" stop-color="#818CF8" />
+      <stop offset="100%" stop-color="#C084FC" />
+    </linearGradient>
+    <linearGradient id="accent-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34D399" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="512" height="512" rx="120" fill="url(#bg-grad)" />
+  <rect x="8" y="8" width="496" height="496" rx="112" stroke="url(#shield-grad)" stroke-width="4" stroke-opacity="0.3" />
+
+  <!-- Geometric Shield Outer -->
+  <path d="M256 96L376 136V248C376 324.8 324.8 393.6 256 416C187.2 393.6 136 324.8 136 248V136L256 96Z" 
+        fill="url(#shield-grad)" 
+        fill-opacity="0.12" 
+        stroke="url(#shield-grad)" 
+        stroke-width="14" 
+        stroke-linejoin="round"
+        filter="url(#glow)" />
+
+  <!-- Document & Lock Symbol -->
+  <!-- Document Shape -->
+  <rect x="200" y="180" width="112" height="152" rx="16" fill="#0F172A" stroke="url(#accent-grad)" stroke-width="10" />
+  
+  <!-- Document Folded Corner Line -->
+  <line x1="228" y1="220" x2="284" y2="220" stroke="#94A3B8" stroke-width="8" stroke-linecap="round" />
+  <line x1="228" y1="248" x2="268" y2="248" stroke="#94A3B8" stroke-width="8" stroke-linecap="round" />
+
+  <!-- Keyhole Glow Center -->
+  <circle cx="256" cy="286" r="14" fill="url(#accent-grad)" />
+  <polygon points="250,286 262,286 266,306 246,306" fill="url(#accent-grad)" />
 </svg>

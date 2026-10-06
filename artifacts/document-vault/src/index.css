@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
@@ -37,126 +37,171 @@
   --color-sidebar-accent: hsl(var(--sidebar-accent));
   --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
   --color-sidebar-ring: hsl(var(--sidebar-ring));
-  --font-sans: var(--app-font-sans);
-  --font-serif: var(--app-font-serif);
-  --font-mono: var(--app-font-mono);
+  
+  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 6px);
+  --radius-2xl: calc(var(--radius) + 12px);
 }
 
 :root {
-  --background: 42 28% 94%;
-  --foreground: 177 22% 18%;
-  --border: 40 18% 83%;
-  --input: 40 18% 79%;
-  --ring: 13 53% 56%;
-  --card: 42 34% 97%;
-  --card-foreground: 177 22% 18%;
-  --card-border: 40 21% 86%;
-  --sidebar: 177 22% 20%;
-  --sidebar-foreground: 42 31% 92%;
-  --sidebar-border: 177 18% 28%;
-  --sidebar-primary: 35 73% 73%;
-  --sidebar-primary-foreground: 177 24% 17%;
-  --sidebar-accent: 177 18% 27%;
-  --sidebar-accent-foreground: 42 31% 94%;
-  --sidebar-ring: 35 73% 73%;
-  --popover: 42 34% 97%;
-  --popover-foreground: 177 22% 18%;
-  --popover-border: 40 21% 86%;
-  --primary: 177 22% 20%;
-  --primary-foreground: 42 31% 95%;
-  --primary-border: hsl(177 22% 20%);
-  --secondary: 153 27% 88%;
-  --secondary-foreground: 177 22% 20%;
-  --secondary-border: hsl(153 22% 78%);
-  --muted: 40 20% 89%;
-  --muted-foreground: 177 10% 43%;
-  --accent: 14 53% 56%;
-  --accent-foreground: 42 31% 96%;
-  --destructive: 4 55% 49%;
-  --destructive-foreground: 42 31% 96%;
-  --app-font-sans: 'Plus Jakarta Sans', sans-serif;
-  --app-font-serif: 'Fraunces', Georgia, serif;
-  --app-font-mono: 'DM Mono', monospace;
-  --radius: 0.85rem;
-  --shadow-sm: 0 2px 12px hsl(177 22% 20% / 0.05);
-  --shadow-md: 0 10px 30px hsl(177 22% 20% / 0.08);
-  --shadow-lg: 0 20px 60px hsl(177 22% 20% / 0.12);
+  /* Warm Milk White Light Theme Palette */
+  /* 60% Soft Milk Canvas Background */
+  --background: 40 20% 96%;
+  --foreground: 224 45% 12%;
+
+  /* 30% Warm Milk White Surfaces & Cards */
+  --card: 40 30% 99%;
+  --card-foreground: 224 45% 12%;
+  --card-border: 40 15% 88%;
+  --border: 40 15% 87%;
+  --input: 40 15% 86%;
+  --muted: 40 20% 92%;
+  --muted-foreground: 220 12% 45%;
+
+  /* Light Matching Sidebar */
+  --sidebar: 40 25% 94%;
+  --sidebar-foreground: 224 45% 12%;
+  --sidebar-border: 40 15% 87%;
+  --sidebar-primary: 217 89% 54%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 40 20% 89%;
+  --sidebar-accent-foreground: 224 45% 12%;
+  --sidebar-ring: 217 89% 54%;
+
+  --popover: 40 30% 99%;
+  --popover-foreground: 224 45% 12%;
+  --popover-border: 40 15% 88%;
+
+  /* 10% Royal Blue Action Accent (No Purple) */
+  --primary: 217 89% 54%;
+  --primary-foreground: 0 0% 100%;
+  --primary-border: hsl(217 89% 54%);
+  --ring: 217 89% 54%;
+
+  --secondary: 40 20% 92%;
+  --secondary-foreground: 224 45% 12%;
+  --secondary-border: hsl(40 15% 86%);
+
+  --accent: 217 89% 54%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 354 84% 57%;
+  --destructive-foreground: 0 0% 100%;
+
+  --radius: 1.25rem;
+  
+  --shadow-sm: 0 2px 6px 0 rgb(15 23 42 / 0.04);
+  --shadow-md: 0 8px 24px -4px rgb(15 23 42 / 0.08);
+  --shadow-lg: 0 20px 40px -6px rgb(15 23 42 / 0.12);
+  --shadow-glow: 0 0 24px -2px rgba(26, 115, 232, 0.3);
 }
 
 .dark {
-  --background: 177 21% 12%;
-  --foreground: 42 30% 92%;
-  --border: 177 16% 25%;
-  --input: 177 16% 28%;
-  --ring: 35 73% 73%;
-  --card: 177 19% 16%;
-  --card-foreground: 42 30% 92%;
-  --card-border: 177 16% 25%;
-  --sidebar: 177 24% 9%;
-  --sidebar-foreground: 42 30% 92%;
-  --sidebar-border: 177 16% 20%;
-  --sidebar-primary: 35 73% 73%;
-  --sidebar-primary-foreground: 177 24% 12%;
-  --sidebar-accent: 177 16% 19%;
-  --sidebar-accent-foreground: 42 30% 92%;
-  --sidebar-ring: 35 73% 73%;
-  --popover: 177 19% 16%;
-  --popover-foreground: 42 30% 92%;
-  --popover-border: 177 16% 25%;
-  --primary: 35 73% 73%;
-  --primary-foreground: 177 24% 12%;
-  --primary-border: hsl(35 73% 73%);
-  --secondary: 177 16% 23%;
-  --secondary-foreground: 42 30% 92%;
-  --secondary-border: hsl(177 13% 32%);
-  --muted: 177 16% 22%;
-  --muted-foreground: 42 12% 67%;
-  --accent: 14 53% 60%;
-  --accent-foreground: 177 24% 12%;
-  --destructive: 4 55% 60%;
-  --destructive-foreground: 177 24% 12%;
+  /* 60-30-10 Dark Theme Palette (Midnight Slate) */
+  /* 60% Canvas Background */
+  --background: 224 45% 6%;
+  --foreground: 210 40% 98%;
+
+  /* 30% Surfaces & Containers */
+  --card: 224 35% 10%;
+  --card-foreground: 210 40% 98%;
+  --card-border: 224 20% 17%;
+  --border: 224 20% 17%;
+  --input: 224 20% 19%;
+  --muted: 224 25% 14%;
+  --muted-foreground: 215 18% 66%;
+
+  --sidebar: 226 60% 4%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-border: 224 20% 12%;
+  --sidebar-primary: 217 91% 60%;
+  --sidebar-primary-foreground: 224 45% 6%;
+  --sidebar-accent: 224 20% 13%;
+  --sidebar-accent-foreground: 210 40% 98%;
+  --sidebar-ring: 217 91% 60%;
+
+  --popover: 224 35% 10%;
+  --popover-foreground: 210 40% 98%;
+  --popover-border: 224 20% 17%;
+
+  /* 10% Royal Blue Accent */
+  --primary: 217 91% 60%;
+  --primary-foreground: 224 45% 6%;
+  --primary-border: hsl(217 91% 60%);
+  --ring: 217 91% 60%;
+
+  --secondary: 224 25% 14%;
+  --secondary-foreground: 210 40% 98%;
+  --secondary-border: hsl(224 20% 20%);
+
+  --accent: 217 91% 60%;
+  --accent-foreground: 224 45% 6%;
+
+  --destructive: 354 84% 63%;
+  --destructive-foreground: 0 0% 100%;
+
+  --shadow-sm: 0 3px 10px 0 rgb(0 0 0 / 0.35);
+  --shadow-md: 0 8px 26px -2px rgb(0 0 0 / 0.45);
+  --shadow-lg: 0 20px 48px -4px rgb(0 0 0 / 0.65);
+  --shadow-glow: 0 0 28px -2px rgba(66, 133, 244, 0.35);
 }
 
 @layer base {
   * { @apply border-border; }
-  html { background: hsl(var(--background)); }
-  body { @apply font-sans antialiased bg-background text-foreground; }
-  button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
-  ::selection { background: hsl(var(--accent) / 0.22); }
+  html { 
+    background: hsl(var(--background));
+    scroll-behavior: smooth;
+    font-size: 16px;
+  }
+  body { 
+    @apply font-sans antialiased bg-background text-foreground;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+  button, a, input, select, textarea { 
+    -webkit-tap-highlight-color: transparent;
+  }
 }
 
-@keyframes vault-rise {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes vault-shimmer {
-  from { background-position: 200% 0; }
-  to { background-position: -200% 0; }
+/* Animations & Keyframes */
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.97) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-.vault-page { animation: vault-rise 500ms cubic-bezier(.2,.8,.2,1) both; }
-.vault-stagger > * { animation: vault-rise 500ms cubic-bezier(.2,.8,.2,1) both; }
-.vault-stagger > *:nth-child(2) { animation-delay: 60ms; }
-.vault-stagger > *:nth-child(3) { animation-delay: 120ms; }
-.vault-stagger > *:nth-child(4) { animation-delay: 180ms; }
-.vault-stagger > *:nth-child(5) { animation-delay: 240ms; }
-.skeleton {
-  background: linear-gradient(100deg, hsl(var(--muted)) 30%, hsl(var(--card)) 50%, hsl(var(--muted)) 70%);
-  background-size: 200% 100%;
-  animation: vault-shimmer 1.8s ease-in-out infinite;
+.animate-fade-in {
+  animation: fadeInScale 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
-.paper-grid {
-  background-image: linear-gradient(hsl(var(--foreground) / .035) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground) / .035) 1px, transparent 1px);
-  background-size: 24px 24px;
+
+.display-title {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
+  font-weight: 700;
 }
-.eyebrow { font-family: var(--app-font-mono); letter-spacing: .11em; text-transform: uppercase; font-size: .68rem; }
-.display { font-family: var(--app-font-serif); letter-spacing: -.035em; }
-.mono { font-family: var(--app-font-mono); }
-.vault-card { border: 1px solid hsl(var(--card-border)); background: hsl(var(--card)); box-shadow: var(--shadow-sm); }
-.vault-card-hover { transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease; }
-.vault-card-hover:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: hsl(var(--accent) / .35); }
-.focus-ring:focus-visible { outline: 2px solid hsl(var(--accent)); outline-offset: 3px; }
+
+.eyebrow-text {
+  font-family: var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.6875rem; /* 11px */
+  font-weight: 600;
+}
+
+.vault-card-surface {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--card-border));
+  box-shadow: var(--shadow-sm);
+  border-radius: 1.25rem;
+  transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vault-card-surface:hover {
+  box-shadow: var(--shadow-md);
+  border-color: hsl(var(--primary) / 0.4);
+}

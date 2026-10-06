@@ -5,13 +5,11 @@ import {
   ArrowUpRight,
   BookOpen,
   Check,
-  FileUp,
   FileArchive,
   FileImage,
   FileText,
   FolderOpen,
   KeyRound,
-  LayoutDashboard,
   Link2,
   LogOut,
   Menu,
@@ -19,9 +17,9 @@ import {
   Settings,
   ShieldCheck,
   Sparkles,
-  UploadCloud,
   Users,
   X,
+  LayoutDashboard,
 } from 'lucide-react';
 import {
   getGetDashboardSummaryQueryKey,
@@ -29,7 +27,6 @@ import {
   getListDocumentsQueryKey,
   useGetSession,
   useLogout,
-  useRequestUploadUrl,
 } from '@workspace/api-client-react';
 import type { Document, User } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
@@ -53,6 +50,8 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { cn } from '@/lib/utils';
 
 export const formatBytes = (bytes: number | null | undefined) => {
@@ -82,7 +81,7 @@ export function LoadingRows({ count = 4 }: { count?: number }) {
   return (
     <div className="space-y-3" data-testid="loading-skeleton">
       {Array.from({ length: count }).map((_, index) => (
-        <div className="skeleton h-[76px] rounded-[var(--radius)]" key={index} />
+        <Skeleton className="h-[76px] w-full rounded-2xl" key={index} />
       ))}
     </div>
   );
@@ -102,11 +101,17 @@ export function QueryState({
   if (loading) return <LoadingRows />;
   if (error) {
     return (
-      <div className="vault-card rounded-[var(--radius)] border-dashed p-10 text-center" data-testid="state-error">
-        <ShieldCheck className="mx-auto mb-3 h-7 w-7 text-accent" />
-        <p className="font-semibold">Haven could not reach the vault</p>
-        <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">Your space is safe. Try again when the connection is ready.</p>
-        {onRetry && <Button data-testid="button-retry" variant="outline" className="mt-5" onClick={onRetry}>Try again</Button>}
+      <div className="vault-card-surface rounded-2xl border-dashed p-8 sm:p-10 text-center" data-testid="state-error">
+        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
+          <ShieldCheck className="h-6 w-6" />
+        </div>
+        <p className="font-semibold text-foreground text-lg">Haven could not reach the vault</p>
+        <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-muted-foreground">Your space is safe. Check your connection or try again.</p>
+        {onRetry && (
+          <Button data-testid="button-retry" variant="outline" size="sm" className="mt-5" onClick={onRetry}>
+            Try again
+          </Button>
+        )}
       </div>
     );
   }
@@ -126,53 +131,111 @@ const FILE_TYPE_LABEL: Record<string, string> = {
   webp: 'WEBP',
 };
 
+export function getGoogleEmbedUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const trimmed = url.trim();
+
+  // 1. Google Drive File: drive.google.com/file/d/FILE_ID
+  const driveFileMatch = trimmed.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (driveFileMatch && driveFileMatch[1]) {
+    return `https://drive.google.com/file/d/${driveFileMatch[1]}/preview`;
+  }
+
+  // 2. Google Docs: docs.google.com/document/d/DOC_ID
+  const docsMatch = trimmed.match(/docs\.google\.com\/document\/d\/([a-zA-Z0-9_-]+)/);
+  if (docsMatch && docsMatch[1]) {
+    return `https://docs.google.com/document/d/${docsMatch[1]}/preview`;
+  }
+
+  // 3. Google Sheets: docs.google.com/spreadsheets/d/SHEET_ID
+  const sheetsMatch = trimmed.match(/docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+  if (sheetsMatch && sheetsMatch[1]) {
+    return `https://docs.google.com/spreadsheets/d/${sheetsMatch[1]}/preview`;
+  }
+
+  // 4. Google Slides: docs.google.com/presentation/d/SLIDE_ID
+  const slidesMatch = trimmed.match(/docs\.google\.com\/presentation\/d\/([a-zA-Z0-9_-]+)/);
+  if (slidesMatch && slidesMatch[1]) {
+    return `https://docs.google.com/presentation/d/${slidesMatch[1]}/embed?start=false&loop=false`;
+  }
+
+  // 5. Google Drive Folder: drive.google.com/drive/folders/FOLDER_ID
+  const folderMatch = trimmed.match(/drive\.google\.com\/drive\/(?:u\/\d+\/)?folders\/([a-zA-Z0-9_-]+)/);
+  if (folderMatch && folderMatch[1]) {
+    return `https://drive.google.com/embeddedfolderview?id=${folderMatch[1]}#grid`;
+  }
+
+  // Generic Google Docs/Drive URL check
+  if (trimmed.includes('drive.google.com') || trimmed.includes('docs.google.com')) {
+    if (trimmed.includes('/view') || trimmed.includes('/edit')) {
+      return trimmed.replace(/\/view.*$/, '/preview').replace(/\/edit.*$/, '/preview');
+    }
+    return trimmed;
+  }
+
+  return null;
+}
+
 export function DocumentCard({ document }: { document: Document }) {
   const Icon = fileIcon(document.fileType);
   const isLink = document.sourceType === 'link';
+  const embedUrl = getGoogleEmbedUrl(document.sourceUrl);
+  const isGoogle = Boolean(embedUrl || (document.sourceUrl && (document.sourceUrl.includes('google.com') || document.sourceUrl.includes('drive.google'))));
+
   return (
-    <article className="vault-card vault-card-hover group rounded-[var(--radius)] p-4" data-testid={`card-document-${document.id}`}>
-      <div className="mb-5 flex items-start justify-between">
-        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-secondary text-primary">
-          {isLink ? <Link2 className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
+    <Link href={`/documents/${document.id}`} className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-3xl" data-testid={`card-document-${document.id}`}>
+      <article className="vault-card-surface flex h-full flex-col justify-between overflow-hidden rounded-3xl border border-border/80 bg-card p-4 transition-all duration-200 hover:-translate-y-1 hover:border-primary/50 hover:shadow-md">
+        {/* Preview Thumbnail Header */}
+        <div className="relative flex h-32 w-full items-center justify-center overflow-hidden rounded-2xl bg-secondary/50 p-4 transition-colors group-hover:bg-secondary/80">
+          <div className={cn(
+            "flex h-12 w-12 items-center justify-center rounded-2xl shadow-xs transition-transform duration-200 group-hover:scale-110",
+            isGoogle ? "bg-blue-600 text-white" : "bg-primary text-primary-foreground"
+          )}>
+            {isGoogle ? <Link2 className="h-6 w-6" /> : isLink ? <Link2 className="h-6 w-6" /> : <Icon className="h-6 w-6" />}
+          </div>
+          
+          {/* Top Right Type Tag */}
+          <span className="absolute right-3 top-3 rounded-full bg-background/90 px-2.5 py-1 text-[10px] font-bold text-foreground border border-border/60 shadow-2xs backdrop-blur-xs">
+            {isGoogle ? 'Google Drive' : isLink ? 'Link' : (FILE_TYPE_LABEL[document.fileType ?? ''] ?? document.fileType ?? 'File')}
+          </span>
         </div>
-        <span className="eyebrow rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
-          {isLink ? 'Link' : (FILE_TYPE_LABEL[document.fileType ?? ''] ?? document.fileType)}
-        </span>
-      </div>
-      <Link href={`/documents/${document.id}`} className="focus-ring block" data-testid={`link-document-${document.id}`}>
-        <h3 className="line-clamp-2 min-h-12 font-semibold leading-6 text-foreground group-hover:text-accent">{document.title}</h3>
-        <p className="mt-2 text-xs text-muted-foreground">
-          {document.category}
-          {!isLink && document.sizeBytes ? <><span className="mx-1 text-border">/</span>{formatBytes(document.sizeBytes)}</> : null}
-        </p>
-      </Link>
-      <div className="mt-4 flex items-center justify-between border-t border-border/70 pt-3">
-        <span className="text-xs text-muted-foreground">{formatDate(document.updatedAt)}</span>
-        <Link href={`/documents/${document.id}`} className="focus-ring rounded-full p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground" data-testid={`button-open-document-${document.id}`}>
-          <ArrowUpRight className="h-4 w-4" />
-        </Link>
-      </div>
-    </article>
+
+        {/* Info Content */}
+        <div className="mt-3.5 flex-1 px-1">
+          <h3 className="line-clamp-2 text-sm font-bold leading-snug text-foreground group-hover:text-primary transition-colors">
+            {document.title}
+          </h3>
+          <div className="mt-2.5 flex items-center justify-between text-xs text-muted-foreground font-medium">
+            <span className="rounded-lg bg-secondary px-2.5 py-1 text-[11px] font-semibold text-secondary-foreground">{document.category}</span>
+            <span>{formatDate(document.updatedAt)}</span>
+          </div>
+        </div>
+      </article>
+    </Link>
   );
 }
 
 export function EmptyVault({
   onAdd,
-  title = 'Your vault is still quiet',
-  description = 'Add the first document and give an important piece of paper a place to land.',
+  title = 'No documents found',
+  description = 'Add your first document link or file to get started.',
 }: {
   onAdd?: () => void;
   title?: string;
   description?: string;
 }) {
   return (
-    <div className="paper-grid rounded-2xl border border-dashed border-border bg-card px-6 py-16 text-center" data-testid="empty-vault">
+    <div className="rounded-3xl border border-dashed border-border bg-card/60 px-6 py-12 text-center shadow-2xs" data-testid="empty-vault">
       <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary text-primary">
-        <FolderOpen className="h-6 w-6" />
+        <FolderOpen className="h-7 w-7" />
       </div>
-      <h3 className="display mt-5 text-2xl">{title}</h3>
-      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">{description}</p>
-      {onAdd && <Button onClick={onAdd} data-testid="button-empty-add" className="mt-6"><Plus className="h-4 w-4" /> Add a document</Button>}
+      <h3 className="display-title mt-4 text-xl text-foreground">{title}</h3>
+      <p className="mx-auto mt-1.5 max-w-md text-sm text-muted-foreground">{description}</p>
+      {onAdd && (
+        <Button onClick={onAdd} data-testid="button-empty-add" className="mt-5 rounded-xl">
+          <Plus className="h-4 w-4 mr-1.5" /> Add document
+        </Button>
+      )}
     </div>
   );
 }
@@ -194,21 +257,21 @@ export function DeleteConfirmDialog({
 }) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent className="rounded-3xl border-card-border bg-card p-6">
         <AlertDialogHeader>
-          <AlertDialogTitle>Remove this document?</AlertDialogTitle>
-          <AlertDialogDescription>
-            <span className="font-semibold text-foreground">{title}</span> will be removed from your vault{sourceType === 'link' ? '; the original file will remain in Google Drive.' : '.'} This cannot be undone.
+          <AlertDialogTitle className="display-title text-xl">Remove document?</AlertDialogTitle>
+          <AlertDialogDescription className="text-sm text-muted-foreground leading-relaxed">
+            Are you sure you want to remove <strong className="text-foreground">{title}</strong>? {sourceType === 'link' ? 'The original Google Drive file will not be affected.' : ''}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Keep it</AlertDialogCancel>
+        <AlertDialogFooter className="mt-4">
+          <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
           <AlertDialogAction
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
             onClick={onConfirm}
             disabled={isPending}
           >
-            {isPending ? 'Removing…' : 'Yes, remove'}
+            {isPending ? 'Removing…' : 'Remove'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -216,56 +279,24 @@ export function DeleteConfirmDialog({
   );
 }
 
-const SUPPORTED_MIME: Record<string, string> = {
-  'application/pdf': 'pdf',
-  'image/png': 'png',
-  'image/jpeg': 'jpg',
-  'image/webp': 'webp',
-};
-
-async function createDocument(body: object): Promise<Document> {
-  const res = await fetch('/api/documents', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-    credentials: 'include',
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json() as Promise<Document>;
-}
-
 export function DocumentDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const queryClient = useQueryClient();
-  const requestUploadUrl = useRequestUploadUrl();
-  const [mode, setMode] = useState<'upload' | 'link'>('upload');
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
   const [tags, setTags] = useState('');
   const [notes, setNotes] = useState('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [sourceUrl, setSourceUrl] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
   const reset = () => {
-    setMode('upload');
     setTitle('');
     setCategory('');
     setTags('');
     setNotes('');
-    setSelectedFile(null);
     setSourceUrl('');
     setError('');
     setSaving(false);
-  };
-
-  const handleFile = (file: File | undefined) => {
-    if (!file) return;
-    if (!SUPPORTED_MIME[file.type]) { setError('Choose a PDF, PNG, JPG, or WEBP file.'); return; }
-    if (file.size > 15 * 1024 * 1024) { setError('Files must be 15 MB or smaller.'); return; }
-    setSelectedFile(file);
-    setError('');
-    if (!title.trim()) setTitle(file.name.replace(/\.[^/.]+$/, '').replace(/[-_]+/g, ' '));
   };
 
   const invalidate = () => {
@@ -276,151 +307,80 @@ export function DocumentDialog({ open, onOpenChange }: { open: boolean; onOpenCh
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!title.trim() || !category.trim()) { setError('A title and category are required.'); return; }
+    if (!title.trim() || !category.trim()) { setError('Title and category are required.'); return; }
+    if (!sourceUrl.trim()) { setError('Paste a document or Google Drive link.'); return; }
+    try { new URL(sourceUrl.trim()); } catch { setError('Enter a valid link URL.'); return; }
     setSaving(true);
     setError('');
     try {
-      if (mode === 'upload') {
-        if (!selectedFile) { setError('Choose a file to upload.'); setSaving(false); return; }
-        const upload = await requestUploadUrl.mutateAsync({
-          data: {
-            name: selectedFile.name,
-            size: selectedFile.size,
-            contentType: selectedFile.type,
-          },
-        });
-        const uploadResponse = await fetch(upload.uploadURL, {
-          method: 'PUT',
-          headers: { 'Content-Type': selectedFile.type },
-          body: selectedFile,
-        });
-        if (!uploadResponse.ok) throw new Error('The private file upload failed.');
-        await createDocument({
-          sourceType: 'upload',
-          title: title.trim(),
-          category: category.trim(),
-          tags: tags.split(',').map((tag) => tag.trim()).filter(Boolean),
-          notes: notes.trim() || undefined,
-          fileType: SUPPORTED_MIME[selectedFile.type],
-          sizeBytes: selectedFile.size,
-          objectPath: upload.objectPath,
-        });
-      } else {
-        if (!sourceUrl.trim()) { setError('Paste a Google Drive link.'); setSaving(false); return; }
-        try {
-          new URL(sourceUrl.trim());
-        } catch {
-          setError('Enter a valid document link.');
-          setSaving(false);
-          return;
-        }
-        await createDocument({
+      const res = await fetch('/api/documents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           sourceType: 'link',
           title: title.trim(),
           category: category.trim(),
-          tags: tags.split(',').map((tag) => tag.trim()).filter(Boolean),
+          tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
           notes: notes.trim() || undefined,
           sourceUrl: sourceUrl.trim(),
-        });
-      }
+        }),
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error(await res.text());
       invalidate();
       reset();
       onOpenChange(false);
     } catch {
-      setError('Could not save this document. Please try again.');
+      setError('Could not save document. Please try again.');
       setSaving(false);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={(value) => { if (!value) reset(); onOpenChange(value); }}>
-      <DialogContent className="border-card-border bg-card sm:max-w-xl">
+      <DialogContent className="rounded-3xl border-card-border bg-card p-6 sm:max-w-lg">
         <DialogHeader>
-          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-secondary text-primary"><UploadCloud className="h-5 w-5" /></div>
-          <DialogTitle className="display text-2xl">Add to your vault</DialogTitle>
-          <DialogDescription>Add a file to your vault, or link an existing Google Drive document.</DialogDescription>
+          <DialogTitle className="display-title text-2xl">Add New Document</DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
+            Paste a link from Google Drive, Docs, Sheets, Slides, or any web URL.
+          </DialogDescription>
         </DialogHeader>
 
-        {/* Mode tabs */}
-        <div className="flex rounded-xl border border-border bg-muted/50 p-1">
-          {(['upload', 'link'] as const).map((m) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => { setMode(m); setError(''); }}
-              className={cn(
-                'flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-colors',
-                mode === m ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground',
-              )}
-              data-testid={`tab-${m}`}
-            >
-              {m === 'upload' ? <FileUp className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
-              {m === 'upload' ? 'Upload file' : 'Link from Drive'}
-            </button>
-          ))}
-        </div>
-
-        <form onSubmit={submit} className="space-y-4" data-testid="form-create-document">
-          {mode === 'upload' ? (
-            <label
-              className="group block cursor-pointer rounded-2xl border border-dashed border-border bg-background/60 p-5 transition-colors hover:border-accent hover:bg-secondary/40"
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => { e.preventDefault(); handleFile(e.dataTransfer.files[0]); }}
-              data-testid="dropzone-document-file"
-            >
-              <input className="sr-only" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp" onChange={(e) => handleFile(e.target.files?.[0])} data-testid="input-document-file" />
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary transition-transform group-hover:-translate-y-0.5">
-                  {selectedFile ? <Check className="h-5 w-5" /> : <FileUp className="h-5 w-5" />}
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold" data-testid="text-selected-file">
-                    {selectedFile ? selectedFile.name : 'Drop a file here or browse'}
-                  </p>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    {selectedFile
-                      ? `${(selectedFile.type.split('/')[1] ?? '').toUpperCase()} · ${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB`
-                       : 'PDF, PNG, JPG, or WEBP · up to 15 MB · stored privately'}
-                  </p>
-                </div>
-              </div>
-            </label>
-          ) : (
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">Google Drive link</label>
-              <div className="relative">
-                <Link2 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  className="pl-10"
-                  type="url"
-                  value={sourceUrl}
-                  onChange={(e) => setSourceUrl(e.target.value)}
-                  placeholder="https://drive.google.com/file/d/…"
-                  data-testid="input-source-url"
-                />
-              </div>
-               <p className="text-xs text-muted-foreground">The file stays in Drive; Haven saves the link and your notes.</p>
+        <form onSubmit={submit} className="mt-2 space-y-4" data-testid="form-create-document">
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Document or Drive Link *</label>
+            <div className="relative">
+              <Link2 className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                className="pl-10 rounded-xl"
+                type="url"
+                value={sourceUrl}
+                onChange={(e) => setSourceUrl(e.target.value)}
+                placeholder="https://drive.google.com/file/d/…"
+                data-testid="input-source-url"
+                required
+              />
             </div>
-          )}
+          </div>
 
-          <div className="grid gap-4 sm:grid-cols-[1.5fr_.8fr]">
-            <label className="space-y-1.5 text-sm font-medium">Document title
-              <Input data-testid="input-document-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Passport renewal" />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block space-y-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">Title *
+              <Input className="rounded-xl mt-1" data-testid="input-document-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Passport, Tax Return..." required />
             </label>
-            <label className="space-y-1.5 text-sm font-medium">Category
-              <Input data-testid="input-document-category" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Identity" />
+            <label className="block space-y-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">Category *
+              <Input className="rounded-xl mt-1" data-testid="input-document-category" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Identity, Work..." required />
             </label>
           </div>
-          <label className="block space-y-1.5 text-sm font-medium">Tags <span className="font-normal text-muted-foreground">comma separated</span>
-            <Input data-testid="input-document-tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="travel, renewal, 2025" />
+          <label className="block space-y-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">Tags <span className="font-normal text-muted-foreground text-[11px]">(comma separated)</span>
+            <Input className="rounded-xl mt-1" data-testid="input-document-tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="2026, renewal" />
           </label>
-          <label className="block space-y-1.5 text-sm font-medium">Notes <span className="font-normal text-muted-foreground">optional</span>
-            <Textarea data-testid="input-document-notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="A small reminder for future you" maxLength={2000} />
+          <label className="block space-y-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">Notes <span className="font-normal text-muted-foreground text-[11px]">(optional)</span>
+            <Textarea className="rounded-xl mt-1 min-h-[80px]" data-testid="input-document-notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional details..." maxLength={2000} />
           </label>
-          {error && <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive" data-testid="status-document-form-error">{error}</p>}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} data-testid="button-cancel-document">Cancel</Button>
-            <Button type="submit" disabled={saving} data-testid="button-save-document">{saving ? 'Saving…' : 'Save to vault'}</Button>
+          {error && <p className="rounded-xl bg-destructive/10 px-3.5 py-2.5 text-xs font-semibold text-destructive" data-testid="status-document-form-error">{error}</p>}
+          <DialogFooter className="pt-2">
+            <Button type="button" variant="outline" className="rounded-xl" onClick={() => onOpenChange(false)} data-testid="button-cancel-document">Cancel</Button>
+            <Button type="submit" disabled={saving} className="rounded-xl" data-testid="button-save-document">{saving ? 'Saving…' : 'Save Document'}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -429,8 +389,9 @@ export function DocumentDialog({ open, onOpenChange }: { open: boolean; onOpenCh
 }
 
 const navItems = [
-  { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/documents', label: 'Documents', icon: FolderOpen },
+  { href: '/vault', label: 'Passwords', icon: KeyRound },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
@@ -441,72 +402,165 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const logout = useLogout();
   const user: User | undefined = session?.user;
   const isAdmin = user?.role === 'ADMIN';
-  const allNavItems = isAdmin ? [...navItems, { href: '/admin', label: 'Admin view', icon: Users }] : navItems;
+  const allNavItems = isAdmin ? [...navItems, { href: '/admin', label: 'Admin', icon: Users }] : navItems;
 
   const handleLogout = () => {
     logout.mutate(undefined, { onSuccess: () => setLocation('/login') });
   };
 
-  const sidebar = (
-    <aside className="flex h-full w-[264px] flex-col bg-sidebar px-4 py-5 text-sidebar-foreground">
+  const sidebarContent = (
+    <aside className="flex h-full w-[260px] flex-col bg-sidebar px-4 py-6 text-sidebar-foreground border-r border-sidebar-border">
+      {/* Brand Header */}
       <div className="flex items-center justify-between px-3">
-        <Link href="/dashboard" className="focus-ring flex items-center gap-3" data-testid="link-brand">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground"><KeyRound className="h-[18px] w-[18px]" /></span>
-          <span><span className="display block text-xl leading-5">Haven</span><span className="eyebrow text-sidebar-foreground/55">vault</span></span>
+        <Link href="/dashboard" className="flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring rounded-xl p-1" data-testid="link-brand">
+          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sidebar-primary text-sidebar-primary-foreground shadow-xs">
+            <KeyRound className="h-5 w-5" />
+          </span>
+          <div>
+            <span className="display-title block text-xl font-extrabold text-sidebar-foreground leading-none">Haven</span>
+          </div>
         </Link>
-        <button className="rounded-lg p-2 text-sidebar-foreground/55 hover:bg-sidebar-accent md:hidden" onClick={() => setMobileOpen(false)} data-testid="button-close-menu"><X className="h-4 w-4" /></button>
+        <button
+          className="rounded-lg p-2 text-sidebar-foreground/60 hover:bg-sidebar-accent md:hidden"
+          onClick={() => setMobileOpen(false)}
+          data-testid="button-close-menu"
+          aria-label="Close menu"
+        >
+          <X className="h-5 w-5" />
+        </button>
       </div>
-      <div className="mt-12 px-3"><p className="eyebrow text-sidebar-foreground/45">Your space</p></div>
-      <nav className="mt-3 space-y-1" aria-label="Main navigation">
+
+      {/* Navigation Links */}
+      <nav className="mt-8 space-y-1.5" aria-label="Main navigation">
         {allNavItems.map(({ href, label, icon: Icon }) => {
           const active = location === href || (href === '/documents' && location.startsWith('/documents/'));
           return (
-            <Link key={href} href={href} onClick={() => setMobileOpen(false)} className={cn('focus-ring flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors', active ? 'bg-sidebar-primary text-sidebar-primary-foreground' : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground')} data-testid={`link-nav-${label.toLowerCase().replaceAll(' ', '-')}`}>
-              <Icon className="h-[17px] w-[17px]" /><span>{label}</span>
-              {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-sidebar-primary-foreground/65" />}
+            <Link
+              key={href}
+              href={href}
+              onClick={() => setMobileOpen(false)}
+              className={cn(
+                'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-150 min-h-[44px]',
+                active
+                  ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-xs font-bold'
+                  : 'text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+              )}
+              data-testid={`link-nav-${label.toLowerCase().replaceAll(' ', '-')}`}
+            >
+              <Icon className="h-4 w-4 shrink-0" />
+              <span>{label}</span>
             </Link>
           );
         })}
       </nav>
-      <div className="mt-auto rounded-2xl border border-sidebar-border bg-sidebar-accent/50 p-4">
-        <div className="flex items-center gap-2 text-sidebar-primary"><Sparkles className="h-4 w-4" /><span className="text-xs font-semibold">Private by default</span></div>
-        <p className="mt-2 text-xs leading-5 text-sidebar-foreground/55">Upload here, or link a file you already keep in Drive.</p>
-      </div>
-      <div className="mt-4 flex items-center gap-3 border-t border-sidebar-border px-2 pt-4">
+
+      {/* User Footer */}
+      <div className="mt-auto flex items-center gap-3 border-t border-sidebar-border/70 px-2 pt-4">
         {session?.user?.picture ? (
-          <img src={session.user.picture} alt={user?.name} className="h-9 w-9 rounded-full object-cover" data-testid="avatar-user" />
+          <img src={session.user.picture} alt={user?.name} className="h-9 w-9 rounded-full object-cover border border-sidebar-border" data-testid="avatar-user" />
         ) : (
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sidebar-primary/15 text-xs font-semibold text-sidebar-primary" data-testid="avatar-user">{initials(user?.name)}</div>
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sidebar-primary/20 text-xs font-bold text-sidebar-primary" data-testid="avatar-user">
+            {initials(user?.name)}
+          </div>
         )}
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold" data-testid="text-shell-user">{user?.name || 'Your account'}</p>
-          <p className="truncate text-xs text-sidebar-foreground/50">{user?.email || 'Session protected'}</p>
+          <p className="truncate text-xs font-semibold text-sidebar-foreground" data-testid="text-shell-user">
+            {user?.name || 'Account'}
+          </p>
+          <p className="truncate text-[11px] text-sidebar-foreground/50">{user?.email}</p>
         </div>
-        <button className="rounded-lg p-2 text-sidebar-foreground/55 hover:bg-sidebar-accent hover:text-sidebar-foreground" onClick={handleLogout} disabled={logout.isPending} data-testid="button-logout"><LogOut className="h-4 w-4" /></button>
+        <button
+          className="rounded-lg p-2 text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
+          onClick={handleLogout}
+          disabled={logout.isPending}
+          data-testid="button-logout"
+          title="Sign out"
+        >
+          <LogOut className="h-4 w-4" />
+        </button>
       </div>
     </aside>
   );
 
   return (
     <div className="min-h-[100dvh] bg-background">
-      <div className="fixed inset-y-0 left-0 z-40 hidden md:block">{sidebar}</div>
+      {/* Desktop Fixed Sidebar */}
+      <div className="fixed inset-y-0 left-0 z-40 hidden md:block">{sidebarContent}</div>
+
+      {/* Mobile Navigation Drawer */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-40 bg-primary/30 backdrop-blur-sm md:hidden" onClick={() => setMobileOpen(false)} data-testid="overlay-mobile-menu">
-          <div className="h-full" onClick={(e) => e.stopPropagation()}>{sidebar}</div>
+        <div
+          className="fixed inset-0 z-50 bg-primary/40 backdrop-blur-sm md:hidden animate-fade-in"
+          onClick={() => setMobileOpen(false)}
+          data-testid="overlay-mobile-menu"
+        >
+          <div className="h-full w-[264px]" onClick={(e) => e.stopPropagation()}>
+            {sidebarContent}
+          </div>
         </div>
       )}
+
+      {/* Main Content Shell */}
       <div className="md:pl-[264px]">
-        <header className="sticky top-0 z-30 flex h-[72px] items-center border-b border-border/70 bg-background/90 px-5 backdrop-blur-md sm:px-8">
-          <button className="mr-3 rounded-lg p-2 text-muted-foreground hover:bg-muted md:hidden" onClick={() => setMobileOpen(true)} data-testid="button-open-menu"><Menu className="h-5 w-5" /></button>
-          <div className="hidden items-center gap-2 text-sm text-muted-foreground sm:flex"><BookOpen className="h-4 w-4" /><span>Personal document vault</span></div>
-          <div className="ml-auto flex items-center gap-3">
-            <div className="hidden items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground lg:flex"><ShieldCheck className="h-3.5 w-3.5 text-accent" /> Private by default</div>
-            <Link href="/settings" className="focus-ring flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-xs font-bold text-primary overflow-hidden" data-testid="link-header-settings">
-              {session?.user?.picture ? <img src={session.user.picture} alt="" className="h-full w-full object-cover" /> : initials(user?.name)}
+        {/* Top Header */}
+        <header className="sticky top-0 z-30 flex h-16 items-center border-b border-border/80 bg-background/85 px-4 sm:px-8 backdrop-blur-md justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              className="rounded-xl p-2 text-muted-foreground hover:bg-secondary md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center"
+              onClick={() => setMobileOpen(true)}
+              data-testid="button-open-menu"
+              aria-label="Open mobile navigation menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <div className="hidden items-center gap-2 text-xs font-semibold text-muted-foreground sm:flex">
+              <BookOpen className="h-4 w-4 text-accent" />
+              <span>Haven Vault Space</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <ThemeToggle />
+            <div className="hidden items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-muted-foreground shadow-xs lg:flex">
+              <ShieldCheck className="h-4 w-4 text-emerald-500" /> AES-256 Protected
+            </div>
+            <Link
+              href="/settings"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-xs font-bold text-primary overflow-hidden border border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              data-testid="link-header-settings"
+              title="Account settings"
+            >
+              {session?.user?.picture ? (
+                <img src={session.user.picture} alt="" className="h-full w-full object-cover" />
+              ) : (
+                initials(user?.name)
+              )}
             </Link>
           </div>
         </header>
-        <main>{children}</main>
+
+        {/* Page Container */}
+        <main className="pb-20 md:pb-10">{children}</main>
+
+        {/* Mobile Ergonomic Bottom Action Bar */}
+        <div className="fixed bottom-0 left-0 right-0 z-30 flex h-14 items-center justify-around border-t border-border bg-background/95 px-2 backdrop-blur-md md:hidden">
+          {allNavItems.map(({ href, label, icon: Icon }) => {
+            const active = location === href || (href === '/documents' && location.startsWith('/documents/'));
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  'flex flex-col items-center justify-center flex-1 py-1 text-[11px] font-semibold transition-colors min-h-[44px]',
+                  active ? 'text-accent font-bold' : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <Icon className="h-4 w-4 mb-0.5" />
+                <span className="truncate max-w-[64px]">{label}</span>
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

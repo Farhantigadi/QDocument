@@ -15,23 +15,129 @@ export default function Documents() {
   const isFiltered = Boolean(search || category);
 
   return (
-    <div className="vault-page mx-auto max-w-[1440px] px-5 py-8 sm:px-8 lg:px-10 lg:py-11" data-testid="page-documents">
-      <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-        <div><p className="eyebrow text-accent">The whole collection</p><h1 className="display mt-2 text-4xl sm:text-5xl" data-testid="heading-documents">Documents<span className="text-accent">.</span></h1><p className="mt-3 text-sm text-muted-foreground">Find something by its name, place, or the feeling it carries.</p></div>
-        <Button onClick={() => setDialogOpen(true)} data-testid="button-add-document-workspace"><Plus className="h-4 w-4" /> Add document</Button>
+    <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-8 lg:px-10 lg:py-8 animate-fade-in" data-testid="page-documents">
+      {/* Header Banner */}
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+        <div>
+          <h1 className="display-title text-2xl font-extrabold sm:text-3xl text-foreground" data-testid="heading-documents">
+            Documents
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground max-w-xl">
+            Search and organize your files and Google Drive links.
+          </p>
+        </div>
+        <Button onClick={() => setDialogOpen(true)} data-testid="button-add-document-workspace" className="w-full md:w-auto rounded-xl">
+          <Plus className="h-4 w-4 mr-1.5" /> Add Document
+        </Button>
       </div>
-      <section className="mt-9 rounded-2xl border border-border bg-card/70 p-3 shadow-[var(--shadow-sm)] sm:p-4">
+
+      {/* Search & Filter Bar Container */}
+      <section className="mt-6 rounded-3xl border border-border/80 bg-card p-4 shadow-2xs">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          <div className="relative flex-1"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input className="h-11 border-0 bg-background pl-10 shadow-none focus-visible:ring-1" type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search your documents" data-testid="input-search-documents" />{search && <button className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:bg-muted" onClick={() => setSearch('')} data-testid="button-clear-search"><X className="h-4 w-4" /></button>}</div>
+          {/* Search Input */}
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              className="pl-10 pr-9 border-border bg-background shadow-2xs focus-visible:ring-2 rounded-2xl"
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search documents by title, tag, or category…"
+              data-testid="input-search-documents"
+            />
+            {search && (
+              <button
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:bg-muted"
+                onClick={() => setSearch('')}
+                data-testid="button-clear-search"
+                title="Clear search"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Filter Selects */}
           <div className="flex flex-col gap-3 sm:flex-row">
-            <div className="relative"><ListFilter className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><select className="h-11 w-full min-w-[160px] appearance-none rounded-md border-0 bg-background pl-10 pr-9 text-sm focus:outline-none focus:ring-1 focus:ring-ring sm:w-auto" value={category} onChange={(event) => setCategory(event.target.value)} data-testid="select-filter-category"><option value="">All categories</option>{categories.map((item) => <option key={item} value={item}>{item}</option>)}</select><SlidersHorizontal className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" /></div>
-            <select className="h-11 min-w-[150px] rounded-md border-0 bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring" value={sort} onChange={(event) => setSort(event.target.value as typeof sort)} data-testid="select-sort-documents"><option value="recent">Most recent</option><option value="name">Name A–Z</option><option value="size">Largest first</option></select>
+            <div className="relative">
+              <ListFilter className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <select
+                className="flex min-h-[44px] w-full appearance-none rounded-2xl border border-border bg-background pl-10 pr-10 text-sm font-semibold text-foreground shadow-2xs focus:outline-none focus:ring-2 focus:ring-ring sm:w-auto min-w-[160px]"
+                value={category}
+                onChange={(event) => setCategory(event.target.value)}
+                data-testid="select-filter-category"
+              >
+                <option value="">All Categories</option>
+                {categories.map((item) => (
+                  <option key={item} value={item}>{item}</option>
+                ))}
+              </select>
+              <SlidersHorizontal className="pointer-events-none absolute right-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            </div>
+
+            <select
+              className="flex min-h-[44px] w-full appearance-none rounded-2xl border border-border bg-background px-4 text-sm font-semibold text-foreground shadow-2xs focus:outline-none focus:ring-2 focus:ring-ring sm:w-auto min-w-[150px]"
+              value={sort}
+              onChange={(event) => setSort(event.target.value as typeof sort)}
+              data-testid="select-sort-documents"
+            >
+              <option value="recent">Most Recent</option>
+              <option value="name">Name A–Z</option>
+              <option value="size">Largest First</option>
+            </select>
           </div>
         </div>
-        {isFiltered && <div className="flex items-center gap-2 px-2 pb-1 pt-3 text-xs text-muted-foreground"><span className="h-1.5 w-1.5 rounded-full bg-accent" /> Showing a refined view <button className="font-semibold text-accent hover:underline" onClick={() => { setSearch(''); setCategory(''); }} data-testid="button-clear-filters">Clear filters</button></div>}
+
+        {/* Filter Indicator pill */}
+        {isFiltered && (
+          <div className="mt-3 flex items-center gap-2 border-t border-border/60 pt-3 text-xs text-muted-foreground">
+            <span className="h-2 w-2 rounded-full bg-primary" />
+            <span>Active filter</span>
+            <button
+              className="font-bold text-primary hover:underline focus-visible:outline-none"
+              onClick={() => { setSearch(''); setCategory(''); }}
+              data-testid="button-clear-filters"
+            >
+              Clear
+            </button>
+          </div>
+        )}
       </section>
-      <div className="mt-7 flex items-center justify-between"><p className="text-sm text-muted-foreground" data-testid="text-document-results">{documents.isLoading ? 'Looking through your vault…' : `${documents.data?.length ?? 0} ${documents.data?.length === 1 ? 'document' : 'documents'}`}</p><div className="eyebrow hidden text-muted-foreground sm:block">Secure index</div></div>
-      <div className="mt-4"><QueryState loading={documents.isLoading} error={documents.error} onRetry={() => void documents.refetch()} empty={documents.data?.length === 0 ? <EmptyVault onAdd={() => setDialogOpen(true)} title={isFiltered ? 'Nothing matches this view' : undefined} description={isFiltered ? 'Try a different word or clear the filters to see the rest of your vault.' : undefined} /> : undefined} />{documents.data && documents.data.length > 0 && <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{documents.data.map((document) => <DocumentCard key={document.id} document={document} />)}</div>}</div>
+
+      {/* Results Counter */}
+      <div className="mt-6 flex items-center justify-between">
+        <p className="text-xs font-semibold text-muted-foreground" data-testid="text-document-results">
+          {documents.isLoading
+            ? 'Loading documents…'
+            : `${documents.data?.length ?? 0} ${documents.data?.length === 1 ? 'document' : 'documents'}`}
+        </p>
+      </div>
+
+      {/* Grid Results */}
+      <div className="mt-4">
+        <QueryState
+          loading={documents.isLoading}
+          error={documents.error}
+          onRetry={() => void documents.refetch()}
+          empty={
+            documents.data?.length === 0 ? (
+              <EmptyVault
+                onAdd={() => setDialogOpen(true)}
+                title={isFiltered ? 'No matching documents' : undefined}
+                description={isFiltered ? 'Try clearing your search terms or active category filter.' : undefined}
+              />
+            ) : undefined
+          }
+        />
+        {documents.data && documents.data.length > 0 && (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {documents.data.map((document) => (
+              <DocumentCard key={document.id} document={document} />
+            ))}
+          </div>
+        )}
+      </div>
+
       <DocumentDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   );

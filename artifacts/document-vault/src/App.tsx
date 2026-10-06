@@ -11,6 +11,7 @@ import Documents from '@/pages/documents';
 import Login from '@/pages/login';
 import NotFound from '@/pages/not-found';
 import Settings from '@/pages/settings';
+import Vault from '@/pages/vault';
 import { useGetSession } from '@workspace/api-client-react';
 
 const queryClient = new QueryClient();
@@ -22,6 +23,16 @@ function HomeRedirect() {
     if (!isLoading) setLocation(data?.authenticated ? '/dashboard' : '/login');
   }, [data?.authenticated, isLoading, setLocation]);
   return <div className="flex min-h-[100dvh] items-center justify-center bg-background"><div className="skeleton h-2 w-24 rounded-full" data-testid="loading-home" /></div>;
+}
+
+function AdminRoute() {
+  const [, setLocation] = useLocation();
+  const session = useGetSession();
+  useEffect(() => {
+    if (!session.isLoading && session.data?.user?.role !== 'ADMIN') setLocation('/dashboard');
+  }, [session.data, session.isLoading, setLocation]);
+  if (session.isLoading || session.data?.user?.role !== 'ADMIN') return null;
+  return <Admin />;
 }
 
 function ProtectedRoutes() {
@@ -37,8 +48,9 @@ function ProtectedRoutes() {
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/documents" component={Documents} />
         <Route path="/documents/:id" component={DocumentDetail} />
+        <Route path="/vault" component={Vault} />
         <Route path="/settings" component={Settings} />
-        <Route path="/admin" component={Admin} />
+        <Route path="/admin" component={AdminRoute} />
         <Route component={NotFound} />
       </Switch>
     </AppShell>
