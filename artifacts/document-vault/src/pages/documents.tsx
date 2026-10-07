@@ -241,44 +241,36 @@ function ShareDialog({
               </Button>
             </>
           ) : (
-            <div className="rounded-xl border border-border bg-muted/40 p-4 space-y-3.5">
-              <div className="flex items-center gap-2">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                  <Check className="h-3 w-3" />
-                </span>
-                <p className="text-xs font-bold text-foreground">Share link ready</p>
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                    <Check className="h-3 w-3" />
+                  </span>
+                  <p className="text-xs font-bold text-foreground">Share link ready</p>
+                </div>
+                <span className="text-[10px] font-medium text-muted-foreground">Auto-copied to clipboard</span>
               </div>
 
-              {/* Clean truncated link container for mobile */}
-              <div className="flex items-center justify-between gap-2 rounded-xl border border-border bg-background p-2.5">
-                <div className="min-w-0 flex-1 px-1">
-                  <p className="text-xs font-mono font-medium text-foreground truncate">
-                    {window.location.host}/shared/{link.split('/shared/')[1]?.slice(0, 8)}…
-                  </p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">Full link automatically copied to clipboard</p>
-                </div>
-                <button
+              {/* Mobile-first Copy Bar */}
+              <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/50 p-1.5 pl-3">
+                <p className="flex-1 min-w-0 text-xs font-mono text-foreground truncate select-all">
+                  {window.location.host}/shared/{link.split('/shared/')[1]?.slice(0, 6) ?? ''}…{link.split('/shared/')[1]?.slice(-4) ?? ''}
+                </p>
+                <Button
                   type="button"
+                  size="sm"
                   onClick={copy}
-                  className="shrink-0 flex min-h-[38px] min-w-[38px] items-center justify-center rounded-lg border border-border bg-muted/50 p-2 text-foreground hover:bg-muted transition-colors"
-                  title="Copy full link"
+                  className="shrink-0 font-semibold text-xs min-h-[38px] px-3.5"
+                  data-testid="button-copy-share-link"
                 >
                   {copied ? (
-                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    <span className="flex items-center gap-1"><Check className="h-3.5 w-3.5" /> Copied</span>
                   ) : (
-                    <Copy className="h-4 w-4 text-muted-foreground" />
+                    <span className="flex items-center gap-1"><Copy className="h-3.5 w-3.5" /> Copy</span>
                   )}
-                </button>
+                </Button>
               </div>
-
-              {/* Full-width 44px mobile touch action */}
-              <Button
-                size="sm"
-                onClick={copy}
-                className="w-full min-h-[44px] text-xs font-semibold"
-              >
-                {copied ? 'Copied to clipboard' : 'Copy link'}
-              </Button>
             </div>
           )}
         </div>
@@ -345,7 +337,7 @@ export default function Documents() {
               </Button>
             </>
           )}
-          <Button variant="outline" size="sm" onClick={() => setManageOpen(true)} className="hidden sm:flex">
+          <Button variant="outline" size="sm" onClick={() => setManageOpen(true)} className="flex items-center gap-1 font-semibold text-xs min-h-[38px]" data-testid="button-manage-links">
             <Link2Off className="h-3.5 w-3.5 mr-1" /> Manage links
           </Button>
           <Button size="sm" onClick={() => setDialogOpen(true)} data-testid="button-add-document-workspace" className="font-semibold">
