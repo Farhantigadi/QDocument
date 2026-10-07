@@ -1,13 +1,9 @@
 import express, { type Express } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import * as _helmet from "helmet";
+import helmet from "helmet";
 import { rateLimit } from "express-rate-limit";
-import * as _pinoHttp from "pino-http";
-import type { Options as PinoHttpOptions } from "pino-http";
-
-const helmet = (_helmet as unknown as { default: typeof _helmet }).default ?? _helmet;
-const pinoHttp = (_pinoHttp as unknown as { default: typeof _pinoHttp }).default ?? _pinoHttp;
+import pinoHttp, { type Options as PinoHttpOptions } from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
