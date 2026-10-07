@@ -241,42 +241,45 @@ function ShareDialog({
               </Button>
             </>
           ) : (
-            <div className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs">
-              <div className="flex items-center justify-between">
+            <div className="rounded-xl border border-border bg-card p-4 space-y-3.5 shadow-xs w-full min-w-0 overflow-hidden">
+              <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0">
                     <Check className="h-3 w-3" />
                   </span>
                   <p className="text-xs font-bold text-foreground">Share link ready</p>
                 </div>
-                <span className="text-[10px] font-medium text-muted-foreground">Auto-copied to clipboard</span>
+                <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 shrink-0">Auto-copied</span>
               </div>
 
-              {/* Mobile-first Copy Bar */}
-              <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/50 p-1.5 pl-3">
-                <p className="flex-1 min-w-0 text-xs font-mono text-foreground truncate select-all">
-                  {window.location.host}/shared/{link.split('/shared/')[1]?.slice(0, 6) ?? ''}…{link.split('/shared/')[1]?.slice(-4) ?? ''}
+              {/* Clean 100% full-width link display pill */}
+              <div className="w-full min-w-0 overflow-hidden rounded-xl border border-border bg-muted/60 p-3">
+                <p className="w-full min-w-0 text-xs font-mono font-medium text-foreground truncate select-all">
+                  {window.location.host}/shared/{(link.split('/shared/')[1] || '').slice(0, 6)}…{(link.split('/shared/')[1] || '').slice(-4)}
                 </p>
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={copy}
-                  className="shrink-0 font-semibold text-xs min-h-[38px] px-3.5"
-                  data-testid="button-copy-share-link"
-                >
-                  {copied ? (
-                    <span className="flex items-center gap-1"><Check className="h-3.5 w-3.5" /> Copied</span>
-                  ) : (
-                    <span className="flex items-center gap-1"><Copy className="h-3.5 w-3.5" /> Copy</span>
-                  )}
-                </Button>
+                <p className="text-[10px] text-muted-foreground mt-1">Link copied to clipboard</p>
               </div>
+
+              {/* Full-width 44px mobile touch action */}
+              <Button
+                type="button"
+                size="sm"
+                onClick={copy}
+                className="w-full min-h-[44px] text-xs font-semibold rounded-xl"
+                data-testid="button-copy-share-link"
+              >
+                {copied ? (
+                  <span className="flex items-center justify-center gap-1.5"><Check className="h-4 w-4 text-emerald-400" /> Copied to clipboard</span>
+                ) : (
+                  <span className="flex items-center justify-center gap-1.5"><Copy className="h-4 w-4" /> Copy link</span>
+                )}
+              </Button>
             </div>
           )}
         </div>
 
         <DialogFooter className="mt-4">
-          <Button variant="outline" size="sm" className="w-full sm:w-auto min-h-[40px]" onClick={() => handleClose(false)}>Done</Button>
+          <Button variant="outline" size="sm" className="w-full min-h-[44px] text-xs font-semibold" onClick={() => handleClose(false)}>Close</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
