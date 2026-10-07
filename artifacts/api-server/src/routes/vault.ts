@@ -52,9 +52,10 @@ router.get("/vault", requireAuth, async (req, res) => {
 
 // ── Get one credential with decrypted password ────────────────────────────────
 router.get("/vault/:id", requireAuth, async (req, res) => {
+  const id = String(req.params.id);
   const [row] = await db.select().from(schema.credentialsTable)
     .where(and(
-      eq(schema.credentialsTable.id, req.params.id),
+      eq(schema.credentialsTable.id, id),
       eq(schema.credentialsTable.userId, req.session!.sub),
     )).limit(1);
   if (!row) { res.status(404).json({ error: "Not found" }); return; }
@@ -86,9 +87,10 @@ router.post("/vault", requireAuth, async (req, res) => {
 
 // ── Update credential ─────────────────────────────────────────────────────────
 router.patch("/vault/:id", requireAuth, async (req, res) => {
+  const id = String(req.params.id);
   const [existing] = await db.select().from(schema.credentialsTable)
     .where(and(
-      eq(schema.credentialsTable.id, req.params.id),
+      eq(schema.credentialsTable.id, id),
       eq(schema.credentialsTable.userId, req.session!.sub),
     )).limit(1);
   if (!existing) { res.status(404).json({ error: "Not found" }); return; }
@@ -106,23 +108,24 @@ router.patch("/vault/:id", requireAuth, async (req, res) => {
   if (notes !== undefined) updates.notes = notes.trim();
 
   await db.update(schema.credentialsTable).set(updates)
-    .where(eq(schema.credentialsTable.id, req.params.id));
+    .where(eq(schema.credentialsTable.id, id));
 
   const [updated] = await db.select().from(schema.credentialsTable)
-    .where(eq(schema.credentialsTable.id, req.params.id)).limit(1);
+    .where(eq(schema.credentialsTable.id, id)).limit(1);
   res.json(toPublic(updated));
 });
 
 // ── Delete credential ─────────────────────────────────────────────────────────
 router.delete("/vault/:id", requireAuth, async (req, res) => {
+  const id = String(req.params.id);
   const [existing] = await db.select().from(schema.credentialsTable)
     .where(and(
-      eq(schema.credentialsTable.id, req.params.id),
+      eq(schema.credentialsTable.id, id),
       eq(schema.credentialsTable.userId, req.session!.sub),
     )).limit(1);
   if (!existing) { res.status(404).json({ error: "Not found" }); return; }
   await db.delete(schema.credentialsTable)
-    .where(eq(schema.credentialsTable.id, req.params.id));
+    .where(eq(schema.credentialsTable.id, id));
   res.status(204).end();
 });
 

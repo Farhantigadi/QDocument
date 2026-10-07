@@ -61,7 +61,7 @@ router.post("/share", requireAuth, async (req, res) => {
 
 // GET /share/:token — public, no auth needed
 router.get("/share/:token", async (req, res) => {
-  const { token } = req.params;
+  const token = String(req.params.token);
 
   const [link] = await db
     .select()
@@ -125,7 +125,7 @@ router.get("/share", requireAuth, async (req, res) => {
 // DELETE /share/:token — revoke (owner only)
 router.delete("/share/:token", requireAuth, async (req, res) => {
   const ownerId = req.session!.sub;
-  const { token } = req.params;
+  const token = String(req.params.token);
 
   const [link] = await db
     .select()
