@@ -43,7 +43,7 @@ function ProtectedRoutes() {
   const [, setLocation] = useLocation();
   const session = useGetSession();
   useEffect(() => {
-    if (!session.isLoading && session.data && !session.data.authenticated) setLocation('/login');
+    if (!session.isLoading && session.data && !session.data.authenticated) setLocation('/');
   }, [session.data, session.isLoading, setLocation]);
   if (!session.isLoading && session.data && !session.data.authenticated) return null;
   return (

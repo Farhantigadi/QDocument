@@ -13,15 +13,15 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (che
       role="switch"
       aria-checked={checked}
       aria-label={label}
-      className={`relative h-7 w-12 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-        checked ? 'bg-accent' : 'bg-muted'
+      className={`relative h-6 w-11 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+        checked ? 'bg-foreground' : 'bg-muted'
       }`}
       onClick={() => onChange(!checked)}
       data-testid={`toggle-${label.toLowerCase().replaceAll(' ', '-')}`}
     >
       <span
-        className={`absolute top-1 h-5 w-5 rounded-full bg-card shadow-xs transition-transform ${
-          checked ? 'left-6' : 'left-1'
+        className={`absolute top-0.5 h-5 w-5 rounded-full bg-background transition-transform ${
+          checked ? 'left-[22px]' : 'left-0.5'
         }`}
       />
     </button>
@@ -62,7 +62,7 @@ export default function Settings() {
     logout.mutate(undefined, {
       onSuccess: () => {
         queryClient.removeQueries({ queryKey: getGetSessionQueryKey() });
-        setLocation('/login');
+        setLocation('/');
       },
     });
 
@@ -73,80 +73,63 @@ export default function Settings() {
   };
 
   return (
-    <div className="mx-auto max-w-[1100px] px-4 py-6 sm:px-8 lg:px-10 lg:py-10 animate-fade-in" data-testid="page-settings">
+    <div className="mx-auto max-w-[1000px] px-4 py-6 sm:px-8 lg:py-8 space-y-6" data-testid="page-settings">
       {/* Header Banner */}
       <div className="border-b border-border/60 pb-6">
-        <p className="eyebrow-text text-accent">Vault Preferences</p>
-        <h1 className="display-title mt-1.5 text-3xl font-extrabold sm:text-4xl lg:text-5xl text-foreground" data-testid="heading-settings">
-          Settings<span className="text-accent">.</span>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl" data-testid="heading-settings">
+          Settings
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground max-w-xl">
-          Your account, your preferences, your rules.
+        <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
+          Manage your account profile, preferences, and session controls.
         </p>
       </div>
 
       {notice && (
-        <div className="mt-6 flex items-center gap-2 rounded-xl bg-secondary px-4 py-3 text-sm font-semibold text-primary animate-fade-in" data-testid="status-settings-notice">
-          <Check className="h-4 w-4 text-emerald-500" /> {notice}
+        <div className="flex items-center gap-2 rounded-lg bg-muted px-4 py-3 text-xs font-semibold text-foreground" data-testid="status-settings-notice">
+          <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> {notice}
         </div>
       )}
 
-      <div className="mt-8 space-y-6">
+      <div className="space-y-6">
         {/* Account Profile Card */}
-        <section className="vault-card-surface overflow-hidden rounded-2xl" data-testid="section-account-settings">
-          <div className="border-b border-border px-6 py-5">
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary text-primary">
-                <KeyRound className="h-5 w-5" />
-              </span>
-              <div>
-                <h2 className="display-title text-lg text-foreground">Account Information</h2>
-                <p className="text-xs text-muted-foreground">Your Haven identity.</p>
-              </div>
-            </div>
+        <section className="vault-card-surface overflow-hidden rounded-xl border border-border bg-card" data-testid="section-account-settings">
+          <div className="border-b border-border px-5 py-4">
+            <h2 className="text-sm font-bold text-foreground">Account profile</h2>
           </div>
 
-          <div className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-sidebar text-xl font-bold text-sidebar-foreground shadow-sm" data-testid="avatar-settings">
+          <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-muted text-sm font-bold text-foreground border border-border" data-testid="avatar-settings">
                 {initials(session?.user?.name)}
               </div>
               <div>
-                <p className="text-lg font-bold text-foreground" data-testid="text-account-name">
-                  {session?.user?.name || 'Your Account'}
+                <p className="text-sm font-bold text-foreground" data-testid="text-account-name">
+                  {session?.user?.name || 'Your account'}
                 </p>
-                <div className="mt-1 flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+                <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Mail className="h-3.5 w-3.5" />
-                  <span data-testid="text-account-email">{session?.user?.email || 'Session protected'}</span>
+                  <span data-testid="text-account-email">{session?.user?.email || 'Protected session'}</span>
                 </div>
               </div>
             </div>
             <Button variant="outline" size="sm" onClick={copyEmail} data-testid="button-copy-email">
-              <Clipboard className="h-4 w-4 mr-1.5" /> Copy email
+              <Clipboard className="h-3.5 w-3.5 mr-1" /> Copy email
             </Button>
           </div>
         </section>
 
         {/* Session & Privacy */}
-        <section className="vault-card-surface rounded-2xl" data-testid="section-session-settings">
-          <div className="border-b border-border px-6 py-5">
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary text-primary">
-                <LockKeyhole className="h-5 w-5" />
-              </span>
-              <div>
-                <h2 className="display-title text-lg text-foreground">Session &amp; Privacy Controls</h2>
-                <p className="text-xs text-muted-foreground">Control how Haven handles your session and data.</p>
-              </div>
-            </div>
+        <section className="vault-card-surface rounded-xl border border-border bg-card" data-testid="section-session-settings">
+          <div className="border-b border-border px-5 py-4">
+            <h2 className="text-sm font-bold text-foreground">Session &amp; privacy controls</h2>
           </div>
 
           <div className="divide-y divide-border/60">
-            <div className="flex items-center justify-between gap-6 px-6 py-5">
+            <div className="flex items-center justify-between gap-4 px-5 py-4">
               <div>
-                <p className="text-sm font-bold text-foreground">Stay signed in</p>
-                <p className="mt-1 max-w-lg text-xs leading-relaxed text-muted-foreground">
-                  Trust this device. Haven keeps you signed in until you say otherwise.
+                <p className="text-xs font-bold text-foreground">Stay signed in</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Keep your session active on this trusted browser until explicit sign out.
                 </p>
               </div>
               <Toggle
@@ -159,31 +142,31 @@ export default function Settings() {
               />
             </div>
 
-            <div className="flex items-center justify-between gap-6 px-6 py-5">
+            <div className="flex items-center justify-between gap-4 px-5 py-4">
               <div>
-                <p className="text-sm font-bold text-foreground">Activity history</p>
-                <p className="mt-1 max-w-lg text-xs leading-relaxed text-muted-foreground">
-                  Keep a private log of logins and document changes. Only you can see it.
+                <p className="text-xs font-bold text-foreground">Account activity log</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Log your own account logins and security events in your private history.
                 </p>
               </div>
               <Toggle
                 checked={activity}
                 onChange={(value) => {
                   setActivity(value);
-                  setNotice(value ? 'Activity history enabled.' : 'Activity history paused.');
+                  setNotice(value ? 'Activity logging enabled.' : 'Activity logging paused.');
                 }}
                 label="Account activity"
               />
             </div>
 
-            <div className="flex items-center justify-between gap-6 px-6 py-5">
+            <div className="flex items-center justify-between gap-4 px-5 py-4">
               <div>
-                <p className="text-sm font-bold text-foreground">Encryption status</p>
-                <p className="mt-1 max-w-lg text-xs leading-relaxed text-muted-foreground">
-                  Email-verified accounts. Passwords encrypted with AES-256 before they touch our database.
+                <p className="text-xs font-bold text-foreground">Vault encryption status</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  AES-256-GCM authenticated encryption enabled for credentials.
                 </p>
               </div>
-              <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-500" data-testid="status-secure-sign-in">
+              <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400" data-testid="status-secure-sign-in">
                 <ShieldCheck className="h-4 w-4" /> Active
               </span>
             </div>
@@ -191,44 +174,36 @@ export default function Settings() {
         </section>
 
         {/* Feedback */}
-        <section className="vault-card-surface overflow-hidden rounded-2xl" data-testid="section-feedback-settings">
-          <div className="border-b border-border px-6 py-5">
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary text-primary">
-                <MessageSquare className="h-5 w-5" />
-              </span>
-              <div>
-                <h2 className="display-title text-lg text-foreground">Share Feedback</h2>
-                <p className="text-xs text-muted-foreground">A bug, a thought, a wish. We read everything.</p>
-              </div>
-            </div>
+        <section className="vault-card-surface overflow-hidden rounded-xl border border-border bg-card" data-testid="section-feedback-settings">
+          <div className="border-b border-border px-5 py-4">
+            <h2 className="text-sm font-bold text-foreground">Send feedback</h2>
           </div>
 
-          <div className="p-6">
+          <div className="p-5">
             {feedbackStatus === 'sent' ? (
-              <div className="flex flex-col items-center gap-3 py-4 text-center">
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500">
-                  <Check className="h-6 w-6" />
+              <div className="flex flex-col items-center gap-2 py-4 text-center">
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                  <Check className="h-5 w-5" />
                 </span>
-                <p className="text-sm font-semibold text-foreground">Got it - thank you.</p>
-                <p className="text-xs text-muted-foreground">We'll reply to <strong>{session?.user?.email}</strong> if needed.</p>
-                <button onClick={() => setFeedbackStatus('idle')} className="mt-1 text-xs font-semibold text-primary hover:underline">
+                <p className="text-xs font-semibold text-foreground">Message received</p>
+                <p className="text-[11px] text-muted-foreground">We will reply to <strong>{session?.user?.email}</strong> if needed.</p>
+                <button onClick={() => setFeedbackStatus('idle')} className="mt-1 text-xs text-foreground underline font-medium">
                   Send another message
                 </button>
               </div>
             ) : (
-              <form onSubmit={submitFeedback} className="space-y-4">
+              <form onSubmit={submitFeedback} className="space-y-3">
                 <Textarea
                   value={feedback}
                   onChange={(e) => { setFeedback(e.target.value); if (feedbackStatus === 'error') setFeedbackStatus('idle'); }}
-                  placeholder="What's on your mind? A bug, a suggestion, anything at all…"
+                  placeholder="What's on your mind? A bug, a suggestion, or a question…"
                   maxLength={2000}
-                  className="min-h-[120px] resize-none rounded-xl text-sm"
+                  className="min-h-[100px] resize-none rounded-lg text-xs"
                   data-testid="input-feedback"
                 />
                 <div className="flex items-center justify-between gap-4">
-                  <span className="text-[11px] text-muted-foreground">{feedback.length} / 2000</span>
-                  <div className="flex items-center gap-3">
+                  <span className="text-[10px] text-muted-foreground">{feedback.length} / 2000</span>
+                  <div className="flex items-center gap-2">
                     {feedbackStatus === 'error' && (
                       <p className="text-xs text-destructive">Failed to send. Please try again.</p>
                     )}
@@ -236,10 +211,9 @@ export default function Settings() {
                       type="submit"
                       size="sm"
                       disabled={feedbackStatus === 'sending' || !feedback.trim()}
-                      className="rounded-xl"
                       data-testid="button-send-feedback"
                     >
-                      <Send className="h-3.5 w-3.5 mr-1.5" />
+                      <Send className="h-3.5 w-3.5 mr-1" />
                       {feedbackStatus === 'sending' ? 'Sending…' : 'Send message'}
                     </Button>
                   </div>
@@ -250,19 +224,20 @@ export default function Settings() {
         </section>
 
         {/* End Session */}
-        <section className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6" data-testid="section-signout-settings">
-          <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+        <section className="rounded-xl border border-destructive/30 bg-card p-5" data-testid="section-signout-settings">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <LogOut className="h-5 w-5 text-destructive" />
-                <h2 className="display-title text-lg text-destructive">End Active Session</h2>
+                <LogOut className="h-4 w-4 text-destructive" />
+                <h2 className="text-sm font-bold text-destructive">Sign out</h2>
               </div>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                Signs you out on this device. Your vault stays safe and intact.
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                End your active session on this device. Your data remains safely encrypted.
               </p>
             </div>
             <Button
               variant="destructive"
+              size="sm"
               className="w-full sm:w-auto"
               onClick={signOut}
               disabled={logout.isPending}
@@ -275,10 +250,10 @@ export default function Settings() {
       </div>
 
       {(sessionLoading || sessionError) && (
-        <div className="mt-5 text-xs text-muted-foreground">
-          {sessionLoading ? 'Loading account details…' : <button onClick={() => void refetch()} className="font-bold text-accent hover:underline" data-testid="button-settings-retry">Retry account details</button>}
+        <div className="mt-4 text-xs text-muted-foreground">
+          {sessionLoading ? 'Loading account details…' : <button onClick={() => void refetch()} className="font-semibold text-foreground underline" data-testid="button-settings-retry">Retry loading account</button>}
         </div>
       )}
     </div>
   );
-}
+}

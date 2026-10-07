@@ -1,78 +1,73 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'wouter';
-import { ArrowRight, FileStack, KeyRound, Plus } from 'lucide-react';
-import { useGetDashboardSummary, useListDocuments, useListCredentials } from '@workspace/api-client-react';
+import { Plus } from 'lucide-react';
+import { useGetDashboardSummary, useListDocuments, useListCredentials, useGetSession } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
 import { DocumentCard, DocumentDialog, EmptyVault, QueryState } from '@/components/vault-ui';
 
 export default function Dashboard() {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const session = useGetSession();
   const summary = useGetDashboardSummary();
   const documents = useListDocuments({ sort: 'recent' });
   const credentials = useListCredentials();
   const recentDocuments = useMemo(() => (documents.data ?? []).slice(0, 4), [documents.data]);
 
-  return (
-    <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-8 lg:px-10 lg:py-8 animate-fade-in" data-testid="page-dashboard">
+  const userName = session.data?.user?.name ? session.data.user.name.split(' ')[0] : null;
 
-      {/* Header */}
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+  return (
+    <div className="mx-auto max-w-[1200px] px-4 py-6 sm:px-8 lg:py-8 space-y-8" data-testid="page-dashboard">
+
+      {/* Header with Greeting & One Primary Action */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border/60 pb-6">
         <div>
-          <h1 className="display-title text-2xl font-extrabold sm:text-3xl text-foreground" data-testid="heading-dashboard">
-            Dashboard
+          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl" data-testid="heading-dashboard">
+            {userName ? `Welcome back, ${userName}` : 'Dashboard'}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground" data-testid="text-dashboard-intro">
-            Your documents and passwords, all in one place.
+          <p className="mt-1 text-xs sm:text-sm text-muted-foreground" data-testid="text-dashboard-intro">
+            Overview of your encrypted files and passwords.
           </p>
         </div>
-        <Button onClick={() => setDialogOpen(true)} data-testid="button-add-document" className="w-full sm:w-auto rounded-xl">
-          <Plus className="h-4 w-4 mr-1.5" /> Add Document
-        </Button>
+        <div>
+          <Button onClick={() => setDialogOpen(true)} data-testid="button-add-document" className="w-full sm:w-auto font-semibold">
+            <Plus className="h-4 w-4 mr-1.5" /> Add document
+          </Button>
+        </div>
       </div>
 
-      {/* Metric Tiles */}
-      <section className="mt-6 grid gap-4 sm:grid-cols-2">
-
-        {/* Documents */}
-        <div className="vault-card-surface flex flex-col justify-between rounded-3xl p-5 border border-border/80 bg-card">
+      {/* Compact Summary Row (Counts, no decorative tiles) */}
+      <section className="grid gap-4 sm:grid-cols-2">
+        <div className="vault-card-surface rounded-xl p-5 border border-border bg-card">
           <div className="flex items-center justify-between">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <FileStack className="h-5 w-5" />
-            </span>
-            <span className="text-xs font-semibold text-muted-foreground">Documents</span>
+            <span className="text-xs font-medium text-muted-foreground">Documents</span>
+            <Link href="/documents" className="text-xs font-medium text-foreground hover:underline" data-testid="link-view-all-documents">
+              View all
+            </Link>
           </div>
-          <p className="my-3 text-3xl font-extrabold text-foreground" data-testid="text-document-count">
+          <p className="mt-3 text-2xl font-bold tracking-tight text-foreground" data-testid="text-document-count">
             {summary.data?.documentCount ?? '0'}
           </p>
-          <Link href="/documents" className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline" data-testid="link-view-all-documents">
-            View all <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
         </div>
 
-        {/* Passwords */}
-        <div className="vault-card-surface flex flex-col justify-between rounded-3xl p-5 border border-border/80 bg-card">
+        <div className="vault-card-surface rounded-xl p-5 border border-border bg-card">
           <div className="flex items-center justify-between">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-              <KeyRound className="h-5 w-5" />
-            </span>
-            <span className="text-xs font-semibold text-muted-foreground">Vault</span>
+            <span className="text-xs font-medium text-muted-foreground">Vault credentials</span>
+            <Link href="/vault" className="text-xs font-medium text-foreground hover:underline" data-testid="link-review-privacy">
+              Manage passwords
+            </Link>
           </div>
-          <p className="my-3 text-3xl font-extrabold text-foreground" data-testid="text-credential-count">
+          <p className="mt-3 text-2xl font-bold tracking-tight text-foreground" data-testid="text-credential-count">
             {credentials.data?.length ?? '0'}
           </p>
-          <Link href="/vault" className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline" data-testid="link-review-privacy">
-            Manage passwords <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
         </div>
-
       </section>
 
-      {/* Recent Documents */}
-      <section className="mt-10">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="display-title text-xl text-foreground">Recent Documents</h2>
-          <Link href="/documents" className="text-xs font-bold text-primary hover:underline flex items-center gap-1" data-testid="link-browse-documents">
-            Browse all <ArrowRight className="h-3.5 w-3.5" />
+      {/* Recent Documents Section */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-foreground">Recent documents</h2>
+          <Link href="/documents" className="text-xs font-medium text-foreground hover:underline" data-testid="link-browse-documents">
+            View all
           </Link>
         </div>
 
@@ -96,3 +91,4 @@ export default function Dashboard() {
     </div>
   );
 }
+
