@@ -18,9 +18,9 @@ router.get("/documents", requireAuth, async (req, res) => {
     .where(and(eq(schema.documentsTable.userId, userId), eq(schema.documentsTable.status, "active")))
     .orderBy(desc(schema.documentsTable.updatedAt));
 
-  if (search) rows = rows.filter(d => [d.title, d.category, d.tags].join(" ").toLowerCase().includes(search));
-  if (category) rows = rows.filter(d => d.category === category);
-  if (sort === "name") rows.sort((a, b) => a.title.localeCompare(b.title));
+  if (search) rows = rows.filter((d: typeof schema.documentsTable.$inferSelect) => [d.title, d.category, d.tags].join(" ").toLowerCase().includes(search));
+  if (category) rows = rows.filter((d: typeof schema.documentsTable.$inferSelect) => d.category === category);
+  if (sort === "name") rows.sort((a: typeof schema.documentsTable.$inferSelect, b: typeof schema.documentsTable.$inferSelect) => a.title.localeCompare(b.title));
 
   res.json(rows.map(toDoc));
 });

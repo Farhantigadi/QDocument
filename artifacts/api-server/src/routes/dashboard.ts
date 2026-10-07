@@ -32,7 +32,7 @@ router.get("/dashboard/activity", requireAuth, async (req, res) => {
     .orderBy(desc(schema.activityTable.createdAt))
     .limit(8);
 
-  res.json(ListActivityResponse.parse(rows.map(r => ({
+  res.json(ListActivityResponse.parse(rows.map((r: typeof schema.activityTable.$inferSelect) => ({
     id: r.id,
     action: r.action,
     label: r.label,

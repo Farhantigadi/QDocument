@@ -42,7 +42,7 @@ router.get("/admin/users", requireAuth, requireAdmin, async (_req, res) => {
     docCountByUser.set(doc.userId, (docCountByUser.get(doc.userId) ?? 0) + 1);
   }
 
-  res.json(ListUsersResponse.parse(users.map(u => ({
+  res.json(ListUsersResponse.parse(users.map((u: typeof schema.usersTable.$inferSelect) => ({
     id: u.id, name: u.name, email: u.email, role: u.role, status: "ACTIVE",
     documentCount: docCountByUser.get(u.id) ?? 0,
     storageUsedBytes: 0,

@@ -33,11 +33,11 @@ router.get('/storage/objects/*path', requireAuth, async (req: Request, res: Resp
     const raw = req.params.path;
     const wildcardPath = Array.isArray(raw) ? raw.join('/') : raw;
     const file = await storage.getObjectEntityFile(`/objects/${wildcardPath}`);
-    const response = await storage.downloadObject(file);
-    res.status(response.status);
-    response.headers.forEach((value, key) => res.setHeader(key, value));
-    if (response.body) {
-      Readable.fromWeb(response.body as ReadableStream<Uint8Array>).pipe(res);
+    const fetchResponse: globalThis.Response = await storage.downloadObject(file);
+    res.status(fetchResponse.status);
+    fetchResponse.headers.forEach((value: string, key: string) => res.setHeader(key, value));
+    if (fetchResponse.body) {
+      Readable.fromWeb(fetchResponse.body as ReadableStream<Uint8Array>).pipe(res);
     } else {
       res.end();
     }

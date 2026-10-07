@@ -92,7 +92,7 @@ router.get("/share/:token", async (req, res) => {
     );
 
   res.json({
-    documents: docs.map((row) => ({
+    documents: docs.map((row: typeof schema.documentsTable.$inferSelect) => ({
       id: row.id,
       title: row.title,
       category: row.category,
@@ -113,7 +113,7 @@ router.get("/share", requireAuth, async (req, res) => {
     .where(eq(schema.shareLinksTable.ownerId, ownerId));
 
   res.json(
-    links.map((l) => ({
+    links.map((l: typeof schema.shareLinksTable.$inferSelect) => ({
       token: l.id,
       documentIds: l.documentIds.split(",").filter(Boolean),
       expiresAt: l.expiresAt?.toISOString() ?? null,
