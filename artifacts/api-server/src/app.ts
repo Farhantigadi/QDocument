@@ -1,11 +1,17 @@
 import express, { type Express } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import helmet from "helmet";
 import { rateLimit } from "express-rate-limit";
-import pinoHttp, { type Options as PinoHttpOptions } from "pino-http";
+import type { Options as PinoHttpOptions } from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
+
+// require() sidesteps the ESM/CJS default-export mismatch that tsc hits
+// with moduleResolution:bundler for these two CJS packages
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const helmet = require("helmet") as (opts?: object) => express.RequestHandler;
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const pinoHttp = require("pino-http") as (opts?: PinoHttpOptions) => express.RequestHandler;
 
 const app: Express = express();
 
