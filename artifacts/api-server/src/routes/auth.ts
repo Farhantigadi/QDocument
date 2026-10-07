@@ -1,12 +1,31 @@
 import { Router, type IRouter } from "express";
 import bcrypt from "bcryptjs";
 import { eq, and, gt } from "drizzle-orm";
+import { rateLimit } from "express-rate-limit";
 import { GetSessionResponse } from "@workspace/api-zod";
 import { db, schema } from "../lib/db";
 import { signSession, verifySession, cookieHeader, clearCookieHeader, resolveRole, COOKIE_NAME } from "../lib/session";
 import { sendVerificationEmail, sendPasswordResetEmail } from "../lib/email";
 
 const router: IRouter = Router();
+
+// 10 attempts / 15 min per IP — covers login, OTP verify, forgot-password
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { error: "Too many attempts, please try again in 15 minutes." },
+});
+
+// 5 OTP sends / hour per IP — prevents email spam
+const otpSendLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { error: "Too many code requests, please try again in an hour." },
+});
 
 function generateOtp(): string {
   return String(Math.floor(100000 + Math.random() * 900000));
@@ -46,7 +65,7 @@ router.get("/auth/session", async (req, res) => {
 // We store name+passwordHash in the OTP label field (JSON) so we don't create
 // the user record until the email is actually verified.
 
-router.post("/auth/signup/request", async (req, res) => {
+router.post("/auth/signup/request", otpSendLimiter, async (req, res) => {
   const { name, email, password } = req.body as Record<string, string>;
   if (!name?.trim() || !email?.trim() || !password) {
     res.status(400).json({ error: "Name, email and password are required." }); return;
@@ -101,7 +120,7 @@ router.post("/auth/signup/request", async (req, res) => {
 
 // ── Signup: step 2 — verify OTP, create account, set session ─────────────────
 
-router.post("/auth/signup/verify", async (req, res) => {
+router.post("/auth/signup/verify", authLimiter, async (req, res) => {
   const { email, code } = req.body as Record<string, string>;
   if (!email?.trim() || !code?.trim()) {
     res.status(400).json({ error: "Email and code are required." }); return;
@@ -152,7 +171,7 @@ router.post("/auth/signup/verify", async (req, res) => {
 
 // ── Login ─────────────────────────────────────────────────────────────────────
 
-router.post("/auth/login", async (req, res) => {
+router.post("/auth/login", authLimiter, async (req, res) => {
   const { email, password } = req.body as Record<string, string>;
   if (!email?.trim() || !password) {
     res.status(400).json({ error: "Email and password are required." }); return;
@@ -177,7 +196,7 @@ router.post("/auth/logout", (_req, res) => {
 
 // ── Forgot password: step 1 — send OTP ───────────────────────────────────────
 
-router.post("/auth/forgot-password", async (req, res) => {
+router.post("/auth/forgot-password", otpSendLimiter, async (req, res) => {
   const { email } = req.body as Record<string, string>;
   if (!email?.trim()) { res.status(400).json({ error: "Email is required." }); return; }
   const normalizedEmail = email.trim().toLowerCase();
@@ -193,7 +212,7 @@ router.post("/auth/forgot-password", async (req, res) => {
 
 // ── Forgot password: step 2 — verify OTP + set new password ──────────────────
 
-router.post("/auth/forgot-password/verify", async (req, res) => {
+router.post("/auth/forgot-password/verify", authLimiter, async (req, res) => {
   const { email, code, newPassword } = req.body as Record<string, string>;
   if (!email?.trim() || !code?.trim() || !newPassword) {
     res.status(400).json({ error: "Email, code and new password are required." }); return;

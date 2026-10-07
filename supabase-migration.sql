@@ -62,3 +62,13 @@ CREATE INDEX IF NOT EXISTS idx_documents_status    ON documents(status);
 CREATE INDEX IF NOT EXISTS idx_vault_creds_user_id ON vault_credentials(user_id);
 CREATE INDEX IF NOT EXISTS idx_otps_email          ON otps(email);
 CREATE INDEX IF NOT EXISTS idx_activity_user_id    ON activity(user_id);
+
+CREATE TABLE IF NOT EXISTS share_links (
+  id           TEXT PRIMARY KEY,
+  owner_id     TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  document_ids TEXT NOT NULL,
+  expires_at   TIMESTAMPTZ,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_share_links_owner_id ON share_links(owner_id);

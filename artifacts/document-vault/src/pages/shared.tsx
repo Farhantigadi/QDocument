@@ -27,6 +27,7 @@ export default function SharedPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!token) { setError('Invalid share link'); return; }
     fetch(`/api/share/${token}`)
       .then(async (res) => {
         if (!res.ok) {

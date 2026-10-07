@@ -22,12 +22,14 @@ export function resolveRole(email: string): string {
 export async function signSession(payload: SessionPayload): Promise<string> {
   return new SignJWT({ ...payload })
     .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("10y")
     .sign(SECRET);
 }
 
 export async function verifySession(token: string): Promise<SessionPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, SECRET, { clockTolerance: Infinity });
+    const { payload } = await jwtVerify(token, SECRET);
     return payload as unknown as SessionPayload;
   } catch {
     return null;

@@ -17,6 +17,14 @@ router.post("/share", requireAuth, async (req, res) => {
     res.status(400).json({ error: "documentIds must be a non-empty array" });
     return;
   }
+  if (documentIds.length > 50) {
+    res.status(400).json({ error: "Cannot share more than 50 documents at once" });
+    return;
+  }
+  if (expiresInDays !== undefined && (!Number.isInteger(expiresInDays) || expiresInDays < 1 || expiresInDays > 3650)) {
+    res.status(400).json({ error: "expiresInDays must be between 1 and 3650" });
+    return;
+  }
 
   // Verify all docs belong to this user
   const docs = await db

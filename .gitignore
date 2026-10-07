@@ -67,6 +67,9 @@ Thumbs.db
 *.log
 logs/
 
+# One-off migration scripts
+lib/db/migrate-*.mjs
+
 # OS artifacts
 .DS_Store
 Thumbs.db
