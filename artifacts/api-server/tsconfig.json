@@ -4,6 +4,8 @@
     "outDir": "dist",
     "types": ["node"],
     "skipLibCheck": true,
+    "noEmit": true,
+    "noEmitOnError": false,
     "paths": {
       "@workspace/db": ["../../lib/db/src/index.ts"],
       "@workspace/db/schema": ["../../lib/db/src/schema/index.ts"],
