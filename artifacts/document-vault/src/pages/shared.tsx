@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'wouter';
-import { FileText, FileImage, FileArchive, Link2, KeyRound, ExternalLink } from 'lucide-react';
+import { FileText, FileImage, FileArchive, Link2, KeyRound, ExternalLink, ShieldOff, Clock, AlertTriangle } from 'lucide-react';
 import { formatDate } from '@/components/vault-ui';
 
 type SharedDoc = {
@@ -25,12 +25,14 @@ export default function SharedPage() {
   const { token } = useParams<{ token: string }>();
   const [docs, setDocs] = useState<SharedDoc[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!token) { setError('Invalid share link'); return; }
+    if (!token) { setError('invalid'); return; }
     fetch(`/api/share/${token}`)
       .then(async (res) => {
         if (!res.ok) {
+          setStatus(res.status);
           const body = await res.json().catch(() => ({}));
           throw new Error(body.error ?? 'Not found');
         }
@@ -52,11 +54,35 @@ export default function SharedPage() {
 
       <main className="mx-auto max-w-[1200px] px-4 py-8 sm:px-8">
         {error ? (
-          <div className="rounded-3xl border border-dashed border-border bg-card/60 px-6 py-16 text-center">
-            <p className="text-lg font-semibold text-foreground">
-              {error === 'This share link has expired' ? 'This link has expired' : 'Link not found'}
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">{error}</p>
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            {status === 410 ? (
+              <>
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/10 mb-5">
+                  <Clock className="h-8 w-8 text-amber-500" />
+                </div>
+                <h2 className="text-xl font-bold text-foreground">This link has expired</h2>
+                <p className="mt-2 max-w-sm text-sm text-muted-foreground">The owner set an expiry date on this share link and it has passed. Ask them to generate a new one.</p>
+              </>
+            ) : status === 404 ? (
+              <>
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10 mb-5">
+                  <ShieldOff className="h-8 w-8 text-destructive" />
+                </div>
+                <h2 className="text-xl font-bold text-foreground">Access revoked</h2>
+                <p className="mt-2 max-w-sm text-sm text-muted-foreground">The owner has revoked access to this shared link. It no longer points to any documents.</p>
+              </>
+            ) : (
+              <>
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary mb-5">
+                  <AlertTriangle className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h2 className="text-xl font-bold text-foreground">Invalid link</h2>
+                <p className="mt-2 max-w-sm text-sm text-muted-foreground">This share link doesn't exist or may have been mistyped.</p>
+              </>
+            )}
+            <a href="/" className="mt-8 inline-flex items-center gap-1.5 rounded-xl border border-border px-4 py-2 text-sm font-semibold text-foreground hover:bg-secondary transition-colors">
+              Go to Haven
+            </a>
           </div>
         ) : !docs ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
