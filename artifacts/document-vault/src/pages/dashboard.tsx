@@ -22,7 +22,7 @@ export default function Dashboard() {
             Dashboard
           </h1>
           <p className="mt-1 text-sm text-muted-foreground" data-testid="text-dashboard-intro">
-            Manage your saved documents, drive links, and credentials.
+            Your documents and passwords, all in one place.
           </p>
         </div>
         <Button onClick={() => setDialogOpen(true)} data-testid="button-add-document" className="w-full sm:w-auto rounded-xl">

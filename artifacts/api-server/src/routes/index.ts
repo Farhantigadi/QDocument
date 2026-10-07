@@ -7,6 +7,7 @@ import adminRouter from "./admin";
 import storageRouter from "./storage";
 import vaultRouter from "./vault";
 import feedbackRouter from "./feedback";
+import shareRouter from "./share";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(adminRouter);
 router.use(storageRouter);
 router.use(vaultRouter);
 router.use(feedbackRouter);
+router.use(shareRouter);
 
 export default router;

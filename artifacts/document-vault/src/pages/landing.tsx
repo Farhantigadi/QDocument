@@ -234,7 +234,7 @@ export default function Landing() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 1, background: gridLine, borderRadius: 20, overflow: 'hidden' }}>
             {[
               { n: '01', title: 'Document Vault', body: 'Passports, leases, insurance, certificates. Link Google Drive files or paste any URL. Organised by category, found in seconds.' },
-              { n: '02', title: 'Password Manager', body: 'Save credentials encrypted at rest. Passwords are hidden by default — revealed only when you explicitly ask for them.' },
+              { n: '02', title: 'Password Manager', body: 'Save credentials encrypted at rest. Passwords stay hidden by default - revealed only when you ask.' },
               { n: '03', title: 'Zero-knowledge', body: 'Your data is encrypted with a key only your session holds. We store ciphertext. Nothing is readable without you.' },
             ].map((p, i) => (
               <Reveal key={p.n} delay={i * 80}>
@@ -260,7 +260,7 @@ export default function Landing() {
               What "AES-256 Protected" actually means.
             </h2>
             <p style={{ marginTop: 18, fontSize: 15, lineHeight: 1.8, color: fgMuted }}>
-              When you save a password, Haven scrambles it into unreadable ciphertext before it ever reaches our database. The scrambling key lives only in your active session — not on our servers.
+              When you save a password, Haven scrambles it into unreadable ciphertext before it ever reaches our database. The scrambling key lives only in your active session - not on our servers.
             </p>
             <p style={{ marginTop: 12, fontSize: 15, lineHeight: 1.8, color: fgMuted }}>
               Think of it as a safe deposit box where only your key works. We hold the box. We never hold the key.
@@ -278,7 +278,7 @@ export default function Landing() {
                 <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#ff5f57', display: 'inline-block' }} />
                 <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#febc2e', display: 'inline-block' }} />
                 <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#28c840', display: 'inline-block' }} />
-                <span style={{ marginLeft: 10, fontSize: 11, color: 'rgba(255,255,255,0.25)', fontFamily: 'DM Mono, monospace' }}>haven — encryption</span>
+                <span style={{ marginLeft: 10, fontSize: 11, color: 'rgba(255,255,255,0.25)', fontFamily: 'DM Mono, monospace' }}>haven - encryption</span>
               </div>
               <div style={{ padding: '20px 20px 24px', fontFamily: 'DM Mono, monospace', fontSize: 13, lineHeight: 1.7 }}>
                 <p style={{ color: 'rgba(255,255,255,0.25)' }}>// what you type</p>
@@ -290,7 +290,7 @@ export default function Landing() {
                 <p style={{ color: 'rgba(255,255,255,0.25)', marginTop: 16 }}>// what an attacker sees</p>
                 <p style={{ color: 'rgba(255,255,255,0.12)', marginTop: 4, userSelect: 'none' }}>{'█'.repeat(28)}</p>
                 <div style={{ marginTop: 16, borderRadius: 10, border: '1px solid rgba(40,200,64,0.2)', background: 'rgba(40,200,64,0.07)', padding: '10px 14px' }}>
-                  <p style={{ color: '#28c840', fontSize: 12 }}>✓ Unreadable without your active session</p>
+                  <p style={{ color: '#28c840', fontSize: 12 }}>✓ Unreadable without your session - even to us</p>
                 </div>
               </div>
             </div>
@@ -308,9 +308,9 @@ export default function Landing() {
           </Reveal>
           <div>
             {[
-              { n: '1', title: 'Create your account', body: "Sign up with your email. A one-time code verifies it's really you. No unverified accounts are ever stored." },
-              { n: '2', title: 'Add your documents and passwords', body: 'Paste a Google Drive link or type in a credential. Haven organises everything by category automatically.' },
-              { n: '3', title: 'Access from anywhere, always encrypted', body: 'Open Haven on your phone or computer. Your vault is always there, always private, always yours.' },
+              { n: '1', title: 'Create your account', body: "Sign up with your email. A one-time code confirms it's really you. No unverified accounts are ever stored." },
+              { n: '2', title: 'Add your documents and passwords', body: 'Paste a Google Drive link or type in a password. Haven organises everything by category - no manual sorting needed.' },
+              { n: '3', title: 'Access from anywhere', body: 'Open Haven on your phone or laptop. Your vault is always there, always encrypted, always yours.' },
             ].map((s, i) => (
               <Reveal key={s.n} delay={i * 60}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 40, padding: '32px 0', borderTop: i === 0 ? `1px solid ${border}` : undefined, borderBottom: `1px solid ${border}` }}>

@@ -222,7 +222,7 @@ function CredentialCard({ cred, onEdit }: { cred: Credential; onEdit: (c: Creden
           <AlertDialogHeader>
             <AlertDialogTitle className="display-title text-xl">Delete credential?</AlertDialogTitle>
             <AlertDialogDescription className="text-sm text-muted-foreground">
-              <span className="font-semibold text-foreground">{cred.accountName}</span> will be permanently deleted from your encrypted vault.
+              <span className="font-semibold text-foreground">{cred.accountName}</span> will be gone for good. This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-4">
@@ -263,7 +263,7 @@ export default function Vault() {
             Password Vault<span className="text-accent">.</span>
           </h1>
           <p className="mt-2 text-sm text-muted-foreground max-w-xl">
-            Credentials are encrypted at rest. Only your session can unlock and reveal them.
+            Every password encrypted. Revealed only when you ask.
           </p>
         </div>
         <Button onClick={openAdd} data-testid="button-add-credential" className="w-full sm:w-auto">
@@ -284,7 +284,7 @@ export default function Vault() {
                 </div>
                 <h3 className="display-title mt-5 text-2xl text-foreground">No passwords saved yet</h3>
                 <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-                  Save your first login or credential to keep it securely encrypted.
+                  Add your first credential. It will be encrypted the moment you hit save.
                 </p>
                 <Button onClick={openAdd} className="mt-6" data-testid="button-empty-add-credential">
                   <Plus className="h-4 w-4 mr-1.5" /> Add credential

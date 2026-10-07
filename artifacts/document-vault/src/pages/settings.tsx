@@ -81,7 +81,7 @@ export default function Settings() {
           Settings<span className="text-accent">.</span>
         </h1>
         <p className="mt-2 text-sm text-muted-foreground max-w-xl">
-          Account details, privacy preferences, and storage usage.
+          Your account, your preferences, your rules.
         </p>
       </div>
 
@@ -101,7 +101,7 @@ export default function Settings() {
               </span>
               <div>
                 <h2 className="display-title text-lg text-foreground">Account Information</h2>
-                <p className="text-xs text-muted-foreground">Your Haven profile identity.</p>
+                <p className="text-xs text-muted-foreground">Your Haven identity.</p>
               </div>
             </div>
           </div>
@@ -136,7 +136,7 @@ export default function Settings() {
               </span>
               <div>
                 <h2 className="display-title text-lg text-foreground">Session &amp; Privacy Controls</h2>
-                <p className="text-xs text-muted-foreground">Manage persistent sign-ins and activity logging.</p>
+                <p className="text-xs text-muted-foreground">Control how Haven handles your session and data.</p>
               </div>
             </div>
           </div>
@@ -144,9 +144,9 @@ export default function Settings() {
           <div className="divide-y divide-border/60">
             <div className="flex items-center justify-between gap-6 px-6 py-5">
               <div>
-                <p className="text-sm font-bold text-foreground">Keep me signed in</p>
+                <p className="text-sm font-bold text-foreground">Stay signed in</p>
                 <p className="mt-1 max-w-lg text-xs leading-relaxed text-muted-foreground">
-                  Maintain persistent sessions on trusted devices.
+                  Trust this device. Haven keeps you signed in until you say otherwise.
                 </p>
               </div>
               <Toggle
@@ -161,9 +161,9 @@ export default function Settings() {
 
             <div className="flex items-center justify-between gap-6 px-6 py-5">
               <div>
-                <p className="text-sm font-bold text-foreground">Account Activity History</p>
+                <p className="text-sm font-bold text-foreground">Activity history</p>
                 <p className="mt-1 max-w-lg text-xs leading-relaxed text-muted-foreground">
-                  Log private audit events for document changes and logins.
+                  Keep a private log of logins and document changes. Only you can see it.
                 </p>
               </div>
               <Toggle
@@ -178,9 +178,9 @@ export default function Settings() {
 
             <div className="flex items-center justify-between gap-6 px-6 py-5">
               <div>
-                <p className="text-sm font-bold text-foreground">Authentication Protocol</p>
+                <p className="text-sm font-bold text-foreground">Encryption status</p>
                 <p className="mt-1 max-w-lg text-xs leading-relaxed text-muted-foreground">
-                  Email verification + AES-256 encrypted storage.
+                  Email-verified accounts. Passwords encrypted with AES-256 before they touch our database.
                 </p>
               </div>
               <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-500" data-testid="status-secure-sign-in">
@@ -199,7 +199,7 @@ export default function Settings() {
               </span>
               <div>
                 <h2 className="display-title text-lg text-foreground">Share Feedback</h2>
-                <p className="text-xs text-muted-foreground">Report a bug, suggest a feature, or just say hello.</p>
+                <p className="text-xs text-muted-foreground">A bug, a thought, a wish. We read everything.</p>
               </div>
             </div>
           </div>
@@ -210,8 +210,8 @@ export default function Settings() {
                 <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500">
                   <Check className="h-6 w-6" />
                 </span>
-                <p className="text-sm font-semibold text-foreground">Message received — thank you!</p>
-                <p className="text-xs text-muted-foreground">We'll get back to you at <strong>{session?.user?.email}</strong> if needed.</p>
+                <p className="text-sm font-semibold text-foreground">Got it - thank you.</p>
+                <p className="text-xs text-muted-foreground">We'll reply to <strong>{session?.user?.email}</strong> if needed.</p>
                 <button onClick={() => setFeedbackStatus('idle')} className="mt-1 text-xs font-semibold text-primary hover:underline">
                   Send another message
                 </button>
@@ -221,7 +221,7 @@ export default function Settings() {
                 <Textarea
                   value={feedback}
                   onChange={(e) => { setFeedback(e.target.value); if (feedbackStatus === 'error') setFeedbackStatus('idle'); }}
-                  placeholder="What's on your mind? A bug, a suggestion, or anything else…"
+                  placeholder="What's on your mind? A bug, a suggestion, anything at all…"
                   maxLength={2000}
                   className="min-h-[120px] resize-none rounded-xl text-sm"
                   data-testid="input-feedback"
@@ -258,7 +258,7 @@ export default function Settings() {
                 <h2 className="display-title text-lg text-destructive">End Active Session</h2>
               </div>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                Sign out of your Haven account on this device. Your documents remain safely stored.
+                Signs you out on this device. Your vault stays safe and intact.
               </p>
             </div>
             <Button

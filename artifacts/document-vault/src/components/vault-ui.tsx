@@ -108,7 +108,7 @@ export function QueryState({
           <ShieldCheck className="h-6 w-6" />
         </div>
         <p className="font-semibold text-foreground text-lg">Haven could not reach the vault</p>
-        <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-muted-foreground">Your space is safe. Check your connection or try again.</p>
+        <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-muted-foreground">Check your connection and try again. Your data is safe.</p>
         {onRetry && (
           <Button data-testid="button-retry" variant="outline" size="sm" className="mt-5" onClick={onRetry}>
             Try again
@@ -263,7 +263,7 @@ export function DeleteConfirmDialog({
         <AlertDialogHeader>
           <AlertDialogTitle className="display-title text-xl">Remove document?</AlertDialogTitle>
           <AlertDialogDescription className="text-sm text-muted-foreground leading-relaxed">
-            Are you sure you want to remove <strong className="text-foreground">{title}</strong>? {sourceType === 'link' ? 'The original Google Drive file will not be affected.' : ''}
+            Are you sure you want to remove <strong className="text-foreground">{title}</strong>? {sourceType === 'link' ? 'The original file on Google Drive stays untouched.' : ''}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="mt-4">
@@ -344,7 +344,7 @@ export function DocumentDialog({ open, onOpenChange }: { open: boolean; onOpenCh
         <DialogHeader>
           <DialogTitle className="display-title text-2xl">Add New Document</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
-            Paste a link from Google Drive, Docs, Sheets, Slides, or any web URL.
+            Paste a Google Drive, Docs, Sheets, or Slides link - or any URL.
           </DialogDescription>
         </DialogHeader>
 
@@ -444,8 +444,8 @@ function FeedbackDialog() {
               <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500">
                 <Check className="h-6 w-6" />
               </span>
-              <p className="text-sm font-semibold text-foreground">Message received — thank you!</p>
-              <p className="text-xs text-muted-foreground">We'll get back to you at <strong>{session?.user?.email}</strong> if needed.</p>
+              <p className="text-sm font-semibold text-foreground">Got it - thank you.</p>
+              <p className="text-xs text-muted-foreground">We'll reply to <strong>{session?.user?.email}</strong> if needed.</p>
               <button onClick={() => setStatus('idle')} className="mt-1 text-xs font-semibold text-primary hover:underline">Send another</button>
             </div>
           ) : (
@@ -604,14 +604,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </button>
             <div className="hidden items-center gap-2 text-xs font-semibold text-muted-foreground sm:flex">
               <BookOpen className="h-4 w-4 text-accent" />
-              <span>Haven Vault Space</span>
+              <span>Haven Vault</span>
             </div>
           </div>
 
           <div className="flex items-center gap-2.5">
             <ThemeToggle />
             <FeedbackDialog />
-            <div className="hidden items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-muted-foreground shadow-xs lg:flex" title="Your passwords are encrypted with AES-256-GCM — the same standard used by banks and governments. Even we cannot read your data.">
+            <div className="hidden items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-muted-foreground shadow-xs lg:flex" title="AES-256-GCM - the same encryption used by banks and governments. Even we cannot read your passwords.">
               <ShieldCheck className="h-4 w-4 text-emerald-500" /> AES-256 Protected
             </div>
             <Link

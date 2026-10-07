@@ -12,6 +12,7 @@ import Landing from '@/pages/landing';
 import Login from '@/pages/login';
 import NotFound from '@/pages/not-found';
 import Settings from '@/pages/settings';
+import SharedPage from '@/pages/shared';
 import Vault from '@/pages/vault';
 import { useGetSession } from '@workspace/api-client-react';
 
@@ -67,6 +68,7 @@ function Router() {
       <Switch>
         <Route path="/" component={HomeRedirect} />
         <Route path="/login" component={Login} />
+        <Route path="/shared/:token" component={SharedPage} />
         <Route component={ProtectedRoutes} />
       </Switch>
     </ErrorBoundary>

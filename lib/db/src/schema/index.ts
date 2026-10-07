@@ -44,6 +44,14 @@ export const otpTable = pgTable("otps", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const shareLinksTable = pgTable("share_links", {
+  id: text("id").primaryKey(),
+  ownerId: text("owner_id").notNull().references(() => usersTable.id, { onDelete: "cascade" }),
+  documentIds: text("document_ids").notNull(),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const activityTable = pgTable("activity", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => usersTable.id, { onDelete: "cascade" }),
