@@ -1,3 +1,6 @@
 {
-  "installCommand": "pnpm install --no-frozen-lockfile"
+  "installCommand": "pnpm install --no-frozen-lockfile",
+  "buildCommand": "node build-vercel.mjs",
+  "outputDirectory": ".vercel/output",
+  "framework": null
 }
