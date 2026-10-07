@@ -1,22 +1,23 @@
-import express, { type Express } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { rateLimit } from "express-rate-limit";
-import type { Options as PinoHttpOptions } from "pino-http";
+import pinoHttp, { type Options as PinoHttpOptions } from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
-// require() sidesteps the ESM/CJS default-export mismatch that tsc hits
-// with moduleResolution:bundler for these two CJS packages
+// require() is intentional — helmet@8 ships CJS-only types that are
+// incompatible with moduleResolution:bundler used by this workspace.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const helmet = require("helmet") as (opts?: object) => express.RequestHandler;
+const helmetFn = require("helmet").default as (opts?: object) => (req: Request, res: Response, next: NextFunction) => void;
+// Same issue with pino-http — unwrap the default export at runtime
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const pinoHttp = require("pino-http") as (opts?: PinoHttpOptions) => express.RequestHandler;
+const pinoHttpFn = (require("pino-http").default ?? require("pino-http")) as (opts?: PinoHttpOptions) => (req: Request, res: Response, next: NextFunction) => void;
 
 const app: Express = express();
 
 // ── Security headers (A05) ────────────────────────────────────────────────────
-app.use(helmet({
+app.use(helmetFn({
   crossOriginEmbedderPolicy: false, // allow Google Drive iframes
   contentSecurityPolicy: {
     directives: {
@@ -50,7 +51,7 @@ const pinoHttpOptions: PinoHttpOptions = {
     },
   },
 };
-app.use(pinoHttp(pinoHttpOptions));
+app.use(pinoHttpFn(pinoHttpOptions));
 app.use(cors({ credentials: true, origin: true }));
 app.use(cookieParser());
 app.use(express.json());
