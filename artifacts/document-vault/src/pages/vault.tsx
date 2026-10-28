@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  Check, ClipboardCopy, Eye, EyeOff, ExternalLink, KeyRound, Pencil, Plus, ShieldCheck, Trash2,
+  Check, ChevronDown, ClipboardCopy, Eye, EyeOff, ExternalLink, KeyRound, Pencil, Plus, ShieldCheck, Trash2,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -88,6 +88,7 @@ function CredentialDialog({
   const [websiteUrl, setWebsiteUrl] = useState(editing?.websiteUrl ?? '');
   const [notes, setNotes] = useState(editing?.notes ?? '');
   const [error, setError] = useState('');
+  const [showMore, setShowMore] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -97,6 +98,7 @@ function CredentialDialog({
       setWebsiteUrl(editing?.websiteUrl ?? '');
       setNotes(editing?.notes ?? '');
       setError('');
+      setShowMore(!!(editing?.username || editing?.websiteUrl || editing?.notes));
     }
   }, [open, editing?.id]);
 
@@ -134,21 +136,36 @@ function CredentialDialog({
             <Input className="text-xs" value={accountName} onChange={(e) => setAccountName(e.target.value)} placeholder="e.g. GitHub, Google, Banking" required data-testid="input-account-name" />
           </label>
           <label className="block space-y-1 text-xs font-medium text-muted-foreground">
-            Username / Email
-            <Input className="text-xs" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="user@example.com" data-testid="input-username" />
-          </label>
-          <label className="block space-y-1 text-xs font-medium text-muted-foreground">
             Password {editing && <span className="font-normal text-muted-foreground">(leave blank to keep current)</span>}
             <Input className="text-xs" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" data-testid="input-vault-password" />
           </label>
-          <label className="block space-y-1 text-xs font-medium text-muted-foreground">
-            Website URL
-            <Input className="text-xs" type="url" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} placeholder="https://example.com" data-testid="input-website-url" />
-          </label>
-          <label className="block space-y-1 text-xs font-medium text-muted-foreground">
-            Notes <span className="font-normal text-muted-foreground">(optional)</span>
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Security questions or recovery hints" maxLength={500} className="min-h-[70px] text-xs resize-none" data-testid="input-credential-notes" />
-          </label>
+
+          <button
+            type="button"
+            onClick={() => setShowMore((v) => !v)}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showMore ? 'rotate-180' : ''}`} />
+            {showMore ? 'Less options' : 'More options'}
+          </button>
+
+          {showMore && (
+            <div className="space-y-3.5">
+              <label className="block space-y-1 text-xs font-medium text-muted-foreground">
+                Username / Email
+                <Input className="text-xs" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="user@example.com" data-testid="input-username" />
+              </label>
+              <label className="block space-y-1 text-xs font-medium text-muted-foreground">
+                Website URL
+                <Input className="text-xs" type="url" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} placeholder="https://example.com" data-testid="input-website-url" />
+              </label>
+              <label className="block space-y-1 text-xs font-medium text-muted-foreground">
+                Notes
+                <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Security questions or recovery hints" maxLength={500} className="min-h-[70px] text-xs resize-none" data-testid="input-credential-notes" />
+              </label>
+            </div>
+          )}
+
           {error && <p className="rounded-lg bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">{error}</p>}
           <DialogFooter className="pt-2">
             <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)}>Cancel</Button>
