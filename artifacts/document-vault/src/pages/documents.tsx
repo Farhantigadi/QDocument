@@ -315,9 +315,9 @@ export default function Documents() {
   };
 
   return (
-    <div className="mx-auto max-w-[1200px] px-4 py-6 sm:px-8 lg:py-8 space-y-6" data-testid="page-documents">
+    <div className="page-container space-y-6" data-testid="page-documents">
       {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-border/60 pb-6">
+      <div className="page-header">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl" data-testid="heading-documents">
             Documents

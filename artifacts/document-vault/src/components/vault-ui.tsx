@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   BookOpen,
   Check,
+  ChevronDown,
   FileArchive,
   FileImage,
   FileText,
@@ -44,7 +45,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -284,6 +284,7 @@ export function DocumentDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   const [sourceUrl, setSourceUrl] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [showMore, setShowMore] = useState(false);
 
   const reset = () => {
     setTitle('');
@@ -293,6 +294,7 @@ export function DocumentDialog({ open, onOpenChange }: { open: boolean; onOpenCh
     setSourceUrl('');
     setError('');
     setSaving(false);
+    setShowMore(false);
   };
 
   const invalidate = () => {
@@ -303,7 +305,7 @@ export function DocumentDialog({ open, onOpenChange }: { open: boolean; onOpenCh
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!title.trim() || !category.trim()) { setError('Title and category are required.'); return; }
+    if (!title.trim()) { setError('Title is required.'); return; }
     if (!sourceUrl.trim()) { setError('Paste a document or Google Drive link.'); return; }
     try { new URL(sourceUrl.trim()); } catch { setError('Enter a valid link URL.'); return; }
     setSaving(true);
@@ -315,7 +317,7 @@ export function DocumentDialog({ open, onOpenChange }: { open: boolean; onOpenCh
         body: JSON.stringify({
           sourceType: 'link',
           title: title.trim(),
-          category: category.trim(),
+          category: category.trim() || 'General',
           tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
           notes: notes.trim() || undefined,
           sourceUrl: sourceUrl.trim(),
@@ -334,21 +336,21 @@ export function DocumentDialog({ open, onOpenChange }: { open: boolean; onOpenCh
 
   return (
     <Dialog open={open} onOpenChange={(value) => { if (!value) reset(); onOpenChange(value); }}>
-      <DialogContent className="rounded-2xl border-border bg-card p-6 sm:max-w-lg">
+      <DialogContent className="rounded-2xl border-border bg-card w-[calc(100vw-2rem)] max-w-lg" style={{ padding: 'var(--dialog-p)' }}>
         <DialogHeader className="space-y-1">
           <DialogTitle className="text-lg font-bold">Add document</DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Paste a Google Drive, Docs, Sheets, Slides or web document link.
+            Paste a Google Drive, Docs, Sheets, or web link.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={submit} className="mt-5 space-y-5" data-testid="form-create-document">
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Document or Drive link *</label>
+        <form onSubmit={submit} className="form-body mt-5" data-testid="form-create-document">
+          <div className="field">
+            <label>Document or Drive link *</label>
             <div className="relative">
               <Link2 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                className="pl-9 text-sm"
+                className="pl-9"
                 type="url"
                 value={sourceUrl}
                 onChange={(e) => setSourceUrl(e.target.value)}
@@ -359,32 +361,42 @@ export function DocumentDialog({ open, onOpenChange }: { open: boolean; onOpenCh
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Title *</label>
-              <Input className="text-sm" data-testid="input-document-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Passport, Tax Return" required />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Category *</label>
-              <Input className="text-sm" data-testid="input-document-category" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. Identity, Financial" required />
-            </div>
+          <div className="field">
+            <label>Title *</label>
+            <Input data-testid="input-document-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Passport, Tax Return" required />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Tags <span className="font-normal">(comma separated)</span></label>
-            <Input className="text-sm" data-testid="input-document-tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="e.g. 2026, renewal" />
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowMore((v) => !v)}
+            className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors py-1 -mt-1"
+          >
+            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showMore ? 'rotate-180' : ''}`} />
+            {showMore ? 'Less options' : 'More options'}
+          </button>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Notes <span className="font-normal">(optional)</span></label>
-            <Textarea className="min-h-[80px] text-sm resize-none" data-testid="input-document-notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional details…" maxLength={2000} />
-          </div>
+          {showMore && (
+            <div className="form-body">
+              <div className="field">
+                <label>Category</label>
+                <Input data-testid="input-document-category" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. Identity, Financial" />
+              </div>
+              <div className="field">
+                <label>Tags <span className="font-normal">(comma separated)</span></label>
+                <Input data-testid="input-document-tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="e.g. 2026, renewal" />
+              </div>
+              <div className="field">
+                <label>Notes <span className="font-normal">(optional)</span></label>
+                <Textarea className="min-h-[80px] resize-none" data-testid="input-document-notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional details…" maxLength={2000} />
+              </div>
+            </div>
+          )}
 
           {error && <p className="rounded-lg bg-destructive/10 px-3 py-2.5 text-xs font-medium text-destructive" data-testid="status-document-form-error">{error}</p>}
-          <DialogFooter className="pt-1 gap-2">
-            <Button type="button" variant="outline" size="sm" className="min-h-[40px] px-5" onClick={() => onOpenChange(false)} data-testid="button-cancel-document">Cancel</Button>
-            <Button type="submit" size="sm" className="min-h-[40px] px-5" disabled={saving} data-testid="button-save-document">{saving ? 'Saving…' : 'Save document'}</Button>
-          </DialogFooter>
+          <div className="dialog-footer">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} data-testid="button-cancel-document">Cancel</Button>
+            <Button type="submit" disabled={saving} data-testid="button-save-document">{saving ? 'Saving…' : 'Save document'}</Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
@@ -589,9 +601,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       )}
 
       {/* Main Content Shell */}
-      <div className="md:pl-[240px]">
+      <div className="md:pl-[240px] min-w-0">
         {/* Top Header */}
-        <header className="sticky top-0 z-30 flex h-14 items-center border-b border-border bg-background/90 px-4 sm:px-8 backdrop-blur-md justify-between">
+        <header className="sticky top-0 z-30 flex h-14 items-center border-b border-border bg-background/90 px-4 sm:px-6 backdrop-blur-md justify-between">
           <div className="flex items-center gap-3">
             <button
               className="rounded-lg p-2 text-muted-foreground hover:bg-muted md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center"
@@ -629,7 +641,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page Container */}
-        <main className="pb-20 md:pb-10">{children}</main>
+        <main className="pb-24 md:pb-12 min-w-0 overflow-x-hidden">{children}</main>
 
         {/* Mobile Action Bar */}
         <div className="fixed bottom-0 left-0 right-0 z-30 flex h-14 items-center justify-around border-t border-border bg-background px-2 md:hidden">

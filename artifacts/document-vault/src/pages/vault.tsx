@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -125,55 +125,55 @@ function CredentialDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-2xl border-border bg-card p-6 sm:max-w-md">
+      <DialogContent className="rounded-2xl border-border bg-card w-[calc(100vw-2rem)] max-w-md" style={{ padding: 'var(--dialog-p)' }}>
         <DialogHeader>
           <DialogTitle className="text-lg font-bold">
             {editing ? 'Edit credential' : 'Add credential'}
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={submit} className="mt-4 space-y-4" data-testid="form-credential">
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Account name *</label>
-            <Input className="text-sm" value={accountName} onChange={(e) => setAccountName(e.target.value)} placeholder="e.g. GitHub, Google, Banking" required data-testid="input-account-name" />
+        <form onSubmit={submit} className="form-body mt-4" data-testid="form-credential">
+          <div className="field">
+            <label>Account name *</label>
+            <Input value={accountName} onChange={(e) => setAccountName(e.target.value)} placeholder="e.g. GitHub, Google, Banking" required data-testid="input-account-name" />
           </div>
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">
+          <div className="field">
+            <label>
               Password {editing && <span className="font-normal">(leave blank to keep current)</span>}
             </label>
-            <Input className="text-sm" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" data-testid="input-vault-password" />
+            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" data-testid="input-vault-password" />
           </div>
 
           <button
             type="button"
             onClick={() => setShowMore((v) => !v)}
-            className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors py-0.5"
+            className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors py-1 -mt-1"
           >
             <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showMore ? 'rotate-180' : ''}`} />
             {showMore ? 'Less options' : 'More options'}
           </button>
 
           {showMore && (
-            <div className="space-y-4 pt-1">
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Username / Email</label>
-                <Input className="text-sm" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="user@example.com" data-testid="input-username" />
+            <div className="form-body">
+              <div className="field">
+                <label>Username / Email</label>
+                <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="user@example.com" data-testid="input-username" />
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Website URL</label>
-                <Input className="text-sm" type="url" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} placeholder="https://example.com" data-testid="input-website-url" />
+              <div className="field">
+                <label>Website URL</label>
+                <Input type="url" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} placeholder="https://example.com" data-testid="input-website-url" />
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Notes</label>
-                <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Security questions or recovery hints" maxLength={500} className="min-h-[80px] text-sm resize-none" data-testid="input-credential-notes" />
+              <div className="field">
+                <label>Notes</label>
+                <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Security questions or recovery hints" maxLength={500} className="min-h-[80px] resize-none" data-testid="input-credential-notes" />
               </div>
             </div>
           )}
 
-          {error && <p className="rounded-lg bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">{error}</p>}
-          <DialogFooter className="pt-2 gap-2 sm:gap-2">
-            <Button type="button" variant="outline" size="sm" className="min-h-[40px] px-5" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" size="sm" className="min-h-[40px] px-5" disabled={isPending} data-testid="button-save-credential">{isPending ? 'Saving…' : 'Save credential'}</Button>
-          </DialogFooter>
+          {error && <p className="rounded-lg bg-destructive/10 px-3 py-2.5 text-xs font-medium text-destructive">{error}</p>}
+          <div className="dialog-footer">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="submit" disabled={isPending} data-testid="button-save-credential">{isPending ? 'Saving…' : 'Save credential'}</Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
@@ -283,9 +283,9 @@ export default function Vault() {
   const openEdit = (c: Credential) => { setEditing(c); setDialogOpen(true); };
 
   return (
-    <div className="mx-auto max-w-[1200px] px-4 py-6 sm:px-8 lg:py-8 space-y-6" data-testid="page-vault">
+    <div className="page-container space-y-6" data-testid="page-vault">
       {/* Header Banner */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border/60 pb-6">
+      <div className="page-header">
         <div>
           <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium text-xs">
             <ShieldCheck className="h-3.5 w-3.5" />

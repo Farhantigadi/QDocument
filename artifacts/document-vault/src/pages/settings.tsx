@@ -73,9 +73,9 @@ export default function Settings() {
   };
 
   return (
-    <div className="mx-auto max-w-[1000px] px-4 py-6 sm:px-8 lg:py-8 space-y-6" data-testid="page-settings">
+    <div className="page-container space-y-6" data-testid="page-settings">
       {/* Header Banner */}
-      <div className="border-b border-border/60 pb-6">
+      <div className="page-header">
         <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl" data-testid="heading-settings">
           Settings
         </h1>

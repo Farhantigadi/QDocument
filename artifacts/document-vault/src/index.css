@@ -147,7 +147,7 @@
 }
 
 @layer base {
-  * { @apply border-border; }
+  * { @apply border-border box-border; }
   html {
     background: hsl(var(--background));
     scroll-behavior: smooth;
@@ -161,12 +161,119 @@
   button, a, input, select, textarea {
     -webkit-tap-highlight-color: transparent;
   }
+  /* Prevent any element from causing horizontal overflow */
+  img, video, svg { max-width: 100%; }
 }
 
 .display-title {
   font-family: var(--font-sans);
   letter-spacing: -0.02em;
   font-weight: 700;
+}
+
+/* ── Spacing scale (4px base) ───────────────────────────────────────────────
+   --sp-1  = 4px   tight inline gap
+   --sp-2  = 8px   label → input
+   --sp-3  = 12px  related element gap
+   --sp-4  = 16px  standard component spacing
+   --sp-5  = 20px  comfortable compact spacing
+   --sp-6  = 24px  form group / section gap
+   --sp-8  = 32px  major section separation
+   --sp-10 = 40px  large desktop section gap
+────────────────────────────────────────────────────────────────────────── */
+:root {
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3:  12px;
+  --sp-4:  16px;
+  --sp-5:  20px;
+  --sp-6:  24px;
+  --sp-8:  32px;
+  --sp-10: 40px;
+
+  /* Page container: fluid horizontal padding that grows with viewport */
+  --page-px: clamp(1rem, 4vw, 2rem);   /* 16px → 32px */
+  --page-py: clamp(1.25rem, 3vw, 2rem); /* 20px → 32px */
+
+  /* Dialog inner padding */
+  --dialog-p: clamp(1.25rem, 4vw, 1.75rem); /* 20px → 28px */
+
+  /* Card inner padding */
+  --card-p: clamp(1rem, 3vw, 1.25rem); /* 16px → 20px */
+
+  /* Touch target minimum */
+  --touch-min: 44px;
+}
+
+/* ── Reusable layout classes ─────────────────────────────────────────────── */
+
+/* Standard page wrapper — use on every page root div */
+.page-container {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: var(--page-px);
+  padding-block: var(--page-py);
+}
+
+/* Page header — title + action row */
+.page-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding-bottom: var(--sp-6);
+  border-bottom: 1px solid hsl(var(--border) / 0.6);
+}
+@media (min-width: 640px) {
+  .page-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+/* Form field group: label + input stacked with consistent gap */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.field label, .field-label {
+  font-size: 0.75rem;    /* 12px */
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.4;
+}
+
+/* Form spacing: consistent vertical rhythm between fields */
+.form-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+/* Dialog footer: stacks on mobile, row on sm+ */
+.dialog-footer {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--sp-2);
+  padding-top: var(--sp-3);
+}
+@media (min-width: 480px) {
+  .dialog-footer {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+}
+.dialog-footer button, .dialog-footer a {
+  min-height: var(--touch-min);
+  width: 100%;
+}
+@media (min-width: 480px) {
+  .dialog-footer button, .dialog-footer a {
+    width: auto;
+    min-width: 96px;
+  }
 }
 
 .vault-card-surface {

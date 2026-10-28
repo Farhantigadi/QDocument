@@ -16,10 +16,10 @@ export default function Dashboard() {
   const userName = session.data?.user?.name ? session.data.user.name.split(' ')[0] : null;
 
   return (
-    <div className="mx-auto max-w-[1200px] px-4 py-6 sm:px-8 lg:py-8 space-y-8" data-testid="page-dashboard">
+    <div className="page-container space-y-8" data-testid="page-dashboard">
 
       {/* Header with Greeting & One Primary Action */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border/60 pb-6">
+      <div className="page-header">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl" data-testid="heading-dashboard">
             {userName ? `Welcome back, ${userName}` : 'Dashboard'}

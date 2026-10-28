@@ -94,9 +94,9 @@ export default function Admin() {
   }
 
   return (
-    <div className="mx-auto max-w-[1200px] px-4 py-6 sm:px-8 lg:py-8 space-y-6" data-testid="page-admin">
+    <div className="page-container space-y-6" data-testid="page-admin">
       {/* Header Banner */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border/60 pb-6">
+      <div className="page-header">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl" data-testid="heading-admin">
             System Overview
@@ -163,8 +163,8 @@ export default function Admin() {
             />
 
             {sortedUsers.length > 0 && (
-              <div className="overflow-x-auto rounded-xl border border-border bg-card">
-                <table className="w-full min-w-[650px] text-left text-xs">
+              <div className="w-full overflow-x-auto rounded-xl border border-border bg-card -mx-0">
+                <table className="w-full min-w-[560px] text-left text-xs">
                   <thead className="sticky top-0 z-10 border-b border-border bg-muted/60 text-muted-foreground font-semibold">
                     <tr>
                       <th className="px-4 py-3">Account</th>
