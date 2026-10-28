@@ -335,20 +335,20 @@ export function DocumentDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   return (
     <Dialog open={open} onOpenChange={(value) => { if (!value) reset(); onOpenChange(value); }}>
       <DialogContent className="rounded-2xl border-border bg-card p-6 sm:max-w-lg">
-        <DialogHeader>
+        <DialogHeader className="space-y-1">
           <DialogTitle className="text-lg font-bold">Add document</DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
             Paste a Google Drive, Docs, Sheets, Slides or web document link.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={submit} className="mt-2 space-y-4" data-testid="form-create-document">
+        <form onSubmit={submit} className="mt-5 space-y-5" data-testid="form-create-document">
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">Document or Drive link *</label>
             <div className="relative">
               <Link2 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                className="pl-9 text-xs"
+                className="pl-9 text-sm"
                 type="url"
                 value={sourceUrl}
                 onChange={(e) => setSourceUrl(e.target.value)}
@@ -360,23 +360,30 @@ export function DocumentDialog({ open, onOpenChange }: { open: boolean; onOpenCh
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block space-y-1.5 text-xs font-medium text-muted-foreground">Title *
-              <Input className="mt-1 text-xs" data-testid="input-document-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Passport, Tax Return" required />
-            </label>
-            <label className="block space-y-1.5 text-xs font-medium text-muted-foreground">Category *
-              <Input className="mt-1 text-xs" data-testid="input-document-category" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. Identity, Financial" required />
-            </label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Title *</label>
+              <Input className="text-sm" data-testid="input-document-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Passport, Tax Return" required />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Category *</label>
+              <Input className="text-sm" data-testid="input-document-category" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. Identity, Financial" required />
+            </div>
           </div>
-          <label className="block space-y-1.5 text-xs font-medium text-muted-foreground">Tags <span className="font-normal text-muted-foreground">(comma separated)</span>
-            <Input className="mt-1 text-xs" data-testid="input-document-tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="e.g. 2026, renewal" />
-          </label>
-          <label className="block space-y-1.5 text-xs font-medium text-muted-foreground">Notes <span className="font-normal text-muted-foreground">(optional)</span>
-            <Textarea className="mt-1 min-h-[70px] text-xs resize-none" data-testid="input-document-notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional details…" maxLength={2000} />
-          </label>
-          {error && <p className="rounded-lg bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive" data-testid="status-document-form-error">{error}</p>}
-          <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)} data-testid="button-cancel-document">Cancel</Button>
-            <Button type="submit" size="sm" disabled={saving} data-testid="button-save-document">{saving ? 'Saving…' : 'Save document'}</Button>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Tags <span className="font-normal">(comma separated)</span></label>
+            <Input className="text-sm" data-testid="input-document-tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="e.g. 2026, renewal" />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Notes <span className="font-normal">(optional)</span></label>
+            <Textarea className="min-h-[80px] text-sm resize-none" data-testid="input-document-notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional details…" maxLength={2000} />
+          </div>
+
+          {error && <p className="rounded-lg bg-destructive/10 px-3 py-2.5 text-xs font-medium text-destructive" data-testid="status-document-form-error">{error}</p>}
+          <DialogFooter className="pt-1 gap-2">
+            <Button type="button" variant="outline" size="sm" className="min-h-[40px] px-5" onClick={() => onOpenChange(false)} data-testid="button-cancel-document">Cancel</Button>
+            <Button type="submit" size="sm" className="min-h-[40px] px-5" disabled={saving} data-testid="button-save-document">{saving ? 'Saving…' : 'Save document'}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

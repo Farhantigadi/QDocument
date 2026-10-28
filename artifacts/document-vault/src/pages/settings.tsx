@@ -13,15 +13,15 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (che
       role="switch"
       aria-checked={checked}
       aria-label={label}
-      className={`relative h-6 w-11 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
         checked ? 'bg-foreground' : 'bg-muted'
       }`}
       onClick={() => onChange(!checked)}
       data-testid={`toggle-${label.toLowerCase().replaceAll(' ', '-')}`}
     >
       <span
-        className={`absolute top-0.5 h-5 w-5 rounded-full bg-background transition-transform ${
-          checked ? 'left-[22px]' : 'left-0.5'
+        className={`pointer-events-none block h-5 w-5 rounded-full bg-background shadow-sm ring-0 transition-transform ${
+          checked ? 'translate-x-5' : 'translate-x-0'
         }`}
       />
     </button>

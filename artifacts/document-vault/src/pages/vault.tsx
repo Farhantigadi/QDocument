@@ -50,6 +50,7 @@ function RevealPassword({ id }: { id: string }) {
     <div className="mt-3 flex items-center gap-2">
       <span className="font-mono flex-1 rounded-lg border border-border bg-muted/60 px-3 py-2 text-xs tracking-widest text-foreground font-medium truncate select-all">
         {show && query.data ? query.data.password : '••••••••••••'}
+        {show && query.isError && <span className="text-destructive tracking-normal">Failed to decrypt</span>}
       </span>
       <button
         onClick={() => setShow((v) => !v)}
@@ -130,46 +131,48 @@ function CredentialDialog({
             {editing ? 'Edit credential' : 'Add credential'}
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={submit} className="mt-3 space-y-3.5" data-testid="form-credential">
-          <label className="block space-y-1 text-xs font-medium text-muted-foreground">
-            Account name *
-            <Input className="text-xs" value={accountName} onChange={(e) => setAccountName(e.target.value)} placeholder="e.g. GitHub, Google, Banking" required data-testid="input-account-name" />
-          </label>
-          <label className="block space-y-1 text-xs font-medium text-muted-foreground">
-            Password {editing && <span className="font-normal text-muted-foreground">(leave blank to keep current)</span>}
-            <Input className="text-xs" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" data-testid="input-vault-password" />
-          </label>
+        <form onSubmit={submit} className="mt-4 space-y-4" data-testid="form-credential">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Account name *</label>
+            <Input className="text-sm" value={accountName} onChange={(e) => setAccountName(e.target.value)} placeholder="e.g. GitHub, Google, Banking" required data-testid="input-account-name" />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">
+              Password {editing && <span className="font-normal">(leave blank to keep current)</span>}
+            </label>
+            <Input className="text-sm" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" data-testid="input-vault-password" />
+          </div>
 
           <button
             type="button"
             onClick={() => setShowMore((v) => !v)}
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors py-0.5"
           >
             <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showMore ? 'rotate-180' : ''}`} />
             {showMore ? 'Less options' : 'More options'}
           </button>
 
           {showMore && (
-            <div className="space-y-3.5">
-              <label className="block space-y-1 text-xs font-medium text-muted-foreground">
-                Username / Email
-                <Input className="text-xs" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="user@example.com" data-testid="input-username" />
-              </label>
-              <label className="block space-y-1 text-xs font-medium text-muted-foreground">
-                Website URL
-                <Input className="text-xs" type="url" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} placeholder="https://example.com" data-testid="input-website-url" />
-              </label>
-              <label className="block space-y-1 text-xs font-medium text-muted-foreground">
-                Notes
-                <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Security questions or recovery hints" maxLength={500} className="min-h-[70px] text-xs resize-none" data-testid="input-credential-notes" />
-              </label>
+            <div className="space-y-4 pt-1">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Username / Email</label>
+                <Input className="text-sm" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="user@example.com" data-testid="input-username" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Website URL</label>
+                <Input className="text-sm" type="url" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} placeholder="https://example.com" data-testid="input-website-url" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Notes</label>
+                <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Security questions or recovery hints" maxLength={500} className="min-h-[80px] text-sm resize-none" data-testid="input-credential-notes" />
+              </div>
             </div>
           )}
 
           {error && <p className="rounded-lg bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">{error}</p>}
-          <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" size="sm" disabled={isPending} data-testid="button-save-credential">{isPending ? 'Saving…' : 'Save credential'}</Button>
+          <DialogFooter className="pt-2 gap-2 sm:gap-2">
+            <Button type="button" variant="outline" size="sm" className="min-h-[40px] px-5" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="submit" size="sm" className="min-h-[40px] px-5" disabled={isPending} data-testid="button-save-credential">{isPending ? 'Saving…' : 'Save credential'}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

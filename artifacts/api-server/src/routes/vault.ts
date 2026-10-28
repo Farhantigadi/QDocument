@@ -21,14 +21,19 @@ function encrypt(plain: string): string {
   return `${iv.toString("hex")}:${tag.toString("hex")}:${encrypted.toString("hex")}`;
 }
 
-function decrypt(stored: string): string {
-  const [ivHex, tagHex, dataHex] = stored.split(":");
-  const iv = Buffer.from(ivHex, "hex");
-  const tag = Buffer.from(tagHex, "hex");
-  const data = Buffer.from(dataHex, "hex");
-  const decipher = createDecipheriv("aes-256-gcm", KEY, iv);
-  decipher.setAuthTag(tag);
-  return decipher.update(data) + decipher.final("utf8");
+function decrypt(stored: string): string | null {
+  try {
+    const [ivHex, tagHex, dataHex] = stored.split(":");
+    if (!ivHex || !tagHex || !dataHex) return null;
+    const iv = Buffer.from(ivHex, "hex");
+    const tag = Buffer.from(tagHex, "hex");
+    const data = Buffer.from(dataHex, "hex");
+    const decipher = createDecipheriv("aes-256-gcm", KEY, iv);
+    decipher.setAuthTag(tag);
+    return decipher.update(data) + decipher.final("utf8");
+  } catch {
+    return null;
+  }
 }
 
 function toPublic(row: typeof schema.credentialsTable.$inferSelect) {
@@ -59,7 +64,9 @@ router.get("/vault/:id", requireAuth, async (req, res) => {
       eq(schema.credentialsTable.userId, req.session!.sub),
     )).limit(1);
   if (!row) { res.status(404).json({ error: "Not found" }); return; }
-  res.json({ ...toPublic(row), password: decrypt(row.encryptedPassword) });
+  const password = decrypt(row.encryptedPassword);
+  if (password === null) { res.status(500).json({ error: "Could not decrypt password. Check VAULT_ENCRYPTION_KEY." }); return; }
+  res.json({ ...toPublic(row), password });
 });
 
 // ── Create credential ─────────────────────────────────────────────────────────
