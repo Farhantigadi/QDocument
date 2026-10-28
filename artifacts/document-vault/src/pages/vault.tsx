@@ -25,11 +25,19 @@ import {
 } from '@/components/ui/alert-dialog';
 import { QueryState } from '@/components/vault-ui';
 
-// ── Reveal password for a single card ────────────────────────────────────────
+// ── Reveal password for a single card with auto-hide timeout ──────────────────
 function RevealPassword({ id }: { id: string }) {
   const [show, setShow] = useState(false);
   const [copied, setCopied] = useState(false);
   const query = useGetCredential(id, { query: { queryKey: getGetCredentialQueryKey(id), enabled: show } });
+
+  useEffect(() => {
+    if (!show) return;
+    const timer = setTimeout(() => {
+      setShow(false);
+    }, 15000); // Auto hide after 15 seconds
+    return () => clearTimeout(timer);
+  }, [show]);
 
   const copy = async () => {
     if (!query.data?.password) return;
@@ -40,12 +48,12 @@ function RevealPassword({ id }: { id: string }) {
 
   return (
     <div className="mt-3 flex items-center gap-2">
-      <span className="font-mono flex-1 rounded-xl border border-border bg-muted/60 px-3.5 py-2 text-sm tracking-widest text-foreground font-semibold truncate select-all">
+      <span className="font-mono flex-1 rounded-lg border border-border bg-muted/60 px-3 py-2 text-xs tracking-widest text-foreground font-medium truncate select-all">
         {show && query.data ? query.data.password : '••••••••••••'}
       </span>
       <button
         onClick={() => setShow((v) => !v)}
-        className="flex h-[40px] w-[40px] items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         title={show ? 'Hide password' : 'Show password'}
         data-testid={`button-toggle-password-${id}`}
       >
@@ -53,11 +61,11 @@ function RevealPassword({ id }: { id: string }) {
       </button>
       <button
         onClick={copy}
-        className="flex h-[40px] w-[40px] items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         title="Copy password to clipboard"
         data-testid={`button-copy-password-${id}`}
       >
-        {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <ClipboardCopy className="h-4 w-4" />}
+        {copied ? <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> : <ClipboardCopy className="h-4 w-4" />}
       </button>
     </div>
   );
@@ -114,40 +122,37 @@ function CredentialDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-2xl border-card-border bg-card p-6 sm:max-w-md">
+      <DialogContent className="rounded-2xl border-border bg-card p-6 sm:max-w-md">
         <DialogHeader>
-          <div className="mb-2 flex h-11 w-11 items-center justify-center rounded-xl bg-secondary text-primary">
-            <KeyRound className="h-5 w-5" />
-          </div>
-          <DialogTitle className="display-title text-2xl">
-            {editing ? 'Edit Credential' : 'Add Credential'}
+          <DialogTitle className="text-lg font-bold">
+            {editing ? 'Edit credential' : 'Add credential'}
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={submit} className="mt-3 space-y-4" data-testid="form-credential">
-          <label className="block space-y-1.5 text-sm font-semibold text-foreground">
-            Account Name *
-            <Input value={accountName} onChange={(e) => setAccountName(e.target.value)} placeholder="e.g. Google, Netflix, Banking" required data-testid="input-account-name" />
+        <form onSubmit={submit} className="mt-3 space-y-3.5" data-testid="form-credential">
+          <label className="block space-y-1 text-xs font-medium text-muted-foreground">
+            Account name *
+            <Input className="text-xs" value={accountName} onChange={(e) => setAccountName(e.target.value)} placeholder="e.g. GitHub, Google, Banking" required data-testid="input-account-name" />
           </label>
-          <label className="block space-y-1.5 text-sm font-semibold text-foreground">
+          <label className="block space-y-1 text-xs font-medium text-muted-foreground">
             Username / Email
-            <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="user@example.com" data-testid="input-username" />
+            <Input className="text-xs" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="user@example.com" data-testid="input-username" />
           </label>
-          <label className="block space-y-1.5 text-sm font-semibold text-foreground">
-            Password {editing && <span className="font-normal text-muted-foreground text-xs">(leave blank to keep current)</span>}
-            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" data-testid="input-vault-password" />
+          <label className="block space-y-1 text-xs font-medium text-muted-foreground">
+            Password {editing && <span className="font-normal text-muted-foreground">(leave blank to keep current)</span>}
+            <Input className="text-xs" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" data-testid="input-vault-password" />
           </label>
-          <label className="block space-y-1.5 text-sm font-semibold text-foreground">
+          <label className="block space-y-1 text-xs font-medium text-muted-foreground">
             Website URL
-            <Input type="url" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} placeholder="https://example.com" data-testid="input-website-url" />
+            <Input className="text-xs" type="url" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} placeholder="https://example.com" data-testid="input-website-url" />
           </label>
-          <label className="block space-y-1.5 text-sm font-semibold text-foreground">
-            Notes <span className="font-normal text-muted-foreground text-xs">(optional)</span>
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Security questions or recovery hints" maxLength={500} className="min-h-[80px]" data-testid="input-credential-notes" />
+          <label className="block space-y-1 text-xs font-medium text-muted-foreground">
+            Notes <span className="font-normal text-muted-foreground">(optional)</span>
+            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Security questions or recovery hints" maxLength={500} className="min-h-[70px] text-xs resize-none" data-testid="input-credential-notes" />
           </label>
-          {error && <p className="rounded-xl bg-destructive/10 px-3.5 py-2.5 text-sm font-medium text-destructive">{error}</p>}
+          {error && <p className="rounded-lg bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">{error}</p>}
           <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={isPending} data-testid="button-save-credential">{isPending ? 'Saving…' : 'Save Credential'}</Button>
+            <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="submit" size="sm" disabled={isPending} data-testid="button-save-credential">{isPending ? 'Saving…' : 'Save credential'}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -161,6 +166,8 @@ function CredentialCard({ cred, onEdit }: { cred: Credential; onEdit: (c: Creden
   const del = useDeleteCredential();
   const [deleteOpen, setDeleteOpen] = useState(false);
 
+  const initial = cred.accountName ? cred.accountName.charAt(0).toUpperCase() : 'P';
+
   const remove = () => {
     del.mutate({ id: cred.id }, {
       onSuccess: () => queryClient.invalidateQueries({ queryKey: getListCredentialsQueryKey() }),
@@ -168,18 +175,23 @@ function CredentialCard({ cred, onEdit }: { cred: Credential; onEdit: (c: Creden
   };
 
   return (
-    <article className="vault-card-surface flex flex-col justify-between rounded-2xl p-5" data-testid={`card-credential-${cred.id}`}>
+    <article className="vault-card-surface flex flex-col justify-between rounded-xl p-4 border border-border bg-card" data-testid={`card-credential-${cred.id}`}>
       <div>
         <div className="mb-3 flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <h3 className="font-bold text-base leading-snug text-foreground truncate" data-testid={`text-account-name-${cred.id}`}>
-              {cred.accountName}
-            </h3>
-            {cred.username && (
-              <p className="mt-0.5 text-xs text-muted-foreground font-medium truncate" data-testid={`text-username-${cred.id}`}>
-                {cred.username}
-              </p>
-            )}
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-bold text-foreground border border-border">
+              {initial}
+            </span>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-bold text-sm leading-snug text-foreground truncate" data-testid={`text-account-name-${cred.id}`}>
+                {cred.accountName}
+              </h3>
+              {cred.username && (
+                <p className="mt-0.5 text-xs text-muted-foreground truncate" data-testid={`text-username-${cred.id}`}>
+                  {cred.username}
+                </p>
+              )}
+            </div>
           </div>
           <div className="flex shrink-0 items-center gap-1">
             {cred.websiteUrl && (
@@ -187,48 +199,48 @@ function CredentialCard({ cred, onEdit }: { cred: Credential; onEdit: (c: Creden
                 href={cred.websiteUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 title="Open website"
                 data-testid={`link-website-${cred.id}`}
               >
-                <ExternalLink className="h-4 w-4" />
+                <ExternalLink className="h-3.5 w-3.5" />
               </a>
             )}
             <button
               onClick={() => onEdit(cred)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               data-testid={`button-edit-credential-${cred.id}`}
               title="Edit credential"
             >
-              <Pencil className="h-4 w-4" />
+              <Pencil className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() => setDeleteOpen(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               data-testid={`button-delete-credential-${cred.id}`}
               title="Delete credential"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>
 
         <RevealPassword id={cred.id} />
-        {cred.notes && <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{cred.notes}</p>}
+        {cred.notes && <p className="mt-2.5 text-xs text-muted-foreground leading-relaxed">{cred.notes}</p>}
       </div>
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <AlertDialogContent className="rounded-2xl border-card-border bg-card">
+        <AlertDialogContent className="rounded-2xl border-border bg-card">
           <AlertDialogHeader>
-            <AlertDialogTitle className="display-title text-xl">Delete credential?</AlertDialogTitle>
-            <AlertDialogDescription className="text-sm text-muted-foreground">
-              <span className="font-semibold text-foreground">{cred.accountName}</span> will be gone for good. This cannot be undone.
+            <AlertDialogTitle className="text-lg font-bold">Delete credential?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs text-muted-foreground">
+              <strong className="text-foreground">{cred.accountName}</strong> will be permanently deleted. This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-4">
-            <AlertDialogCancel className="rounded-xl">Keep it</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-lg text-xs">Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="rounded-lg text-xs bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={remove}
               disabled={del.isPending}
             >
@@ -251,43 +263,43 @@ export default function Vault() {
   const openEdit = (c: Credential) => { setEditing(c); setDialogOpen(true); };
 
   return (
-    <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-8 lg:px-10 lg:py-10 animate-fade-in" data-testid="page-vault">
+    <div className="mx-auto max-w-[1200px] px-4 py-6 sm:px-8 lg:py-8 space-y-6" data-testid="page-vault">
       {/* Header Banner */}
-      <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end border-b border-border/60 pb-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border/60 pb-6">
         <div>
-          <div className="flex items-center gap-2 text-emerald-500 font-semibold text-xs">
-            <ShieldCheck className="h-4 w-4" />
-            <span className="eyebrow-text">AES-256-GCM Encrypted</span>
+          <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium text-xs">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            <span>AES-256-GCM Encrypted</span>
           </div>
-          <h1 className="display-title mt-1.5 text-3xl font-extrabold sm:text-4xl lg:text-5xl text-foreground" data-testid="heading-vault">
-            Password Vault<span className="text-accent">.</span>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-foreground sm:text-3xl" data-testid="heading-vault">
+            Password Vault
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground max-w-xl">
-            Every password encrypted. Revealed only when you ask.
+          <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
+            All credentials encrypted at rest. Revealed only when requested.
           </p>
         </div>
-        <Button onClick={openAdd} data-testid="button-add-credential" className="w-full sm:w-auto">
-          <Plus className="h-4 w-4 mr-1.5" /> Add credential
+        <Button onClick={openAdd} data-testid="button-add-credential" size="sm" className="w-full sm:w-auto font-semibold">
+          <Plus className="h-4 w-4 mr-1" /> Add credential
         </Button>
       </div>
 
-      <div className="mt-8">
+      <div>
         <QueryState
           loading={credentials.isLoading}
           error={credentials.error}
           onRetry={() => void credentials.refetch()}
           empty={
             credentials.data?.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-border bg-card/60 px-6 py-14 text-center shadow-xs" data-testid="empty-vault-credentials">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary text-primary">
-                  <KeyRound className="h-7 w-7" />
+              <div className="rounded-xl border border-dashed border-border bg-card px-6 py-12 text-center" data-testid="empty-vault-credentials">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                  <KeyRound className="h-6 w-6" />
                 </div>
-                <h3 className="display-title mt-5 text-2xl text-foreground">No passwords saved yet</h3>
-                <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-                  Add your first credential. It will be encrypted the moment you hit save.
+                <h3 className="mt-4 text-base font-bold text-foreground">No passwords saved</h3>
+                <p className="mx-auto mt-1 max-w-xs text-xs text-muted-foreground">
+                  Save your first login credential encrypted in your vault.
                 </p>
-                <Button onClick={openAdd} className="mt-6" data-testid="button-empty-add-credential">
-                  <Plus className="h-4 w-4 mr-1.5" /> Add credential
+                <Button onClick={openAdd} size="sm" className="mt-4" data-testid="button-empty-add-credential">
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Add credential
                 </Button>
               </div>
             ) : undefined
@@ -310,3 +322,4 @@ export default function Vault() {
     </div>
   );
 }
+

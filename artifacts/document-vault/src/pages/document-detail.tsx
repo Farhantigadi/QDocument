@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, CalendarDays, Check, ExternalLink, FileImage, FileText, Link2, Pencil, Save, ShieldCheck, Sparkles, Trash2 } from 'lucide-react';
+import { ArrowLeft, Check, ExternalLink, FileImage, FileText, Link2, Pencil, Save, Trash2 } from 'lucide-react';
 import { Link, useLocation, useParams } from 'wouter';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -75,14 +75,14 @@ export default function DocumentDetail() {
   };
 
   return (
-    <div className="mx-auto max-w-[1300px] px-4 py-6 sm:px-8 lg:px-10 lg:py-10 animate-fade-in" data-testid="page-document-detail">
+    <div className="mx-auto max-w-[1200px] px-4 py-6 sm:px-8 lg:py-8 space-y-6" data-testid="page-document-detail">
       {/* Back Link */}
       <Link
         href="/documents"
-        className="inline-flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         data-testid="link-back-documents"
       >
-        <ArrowLeft className="h-4 w-4" /> Back to documents
+        <ArrowLeft className="h-3.5 w-3.5" /> Back to documents
       </Link>
 
       <QueryState
@@ -93,104 +93,101 @@ export default function DocumentDetail() {
       />
 
       {document && (
-        <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
-          {/* Left Main Content Pane */}
-          <section>
-            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start border-b border-border/60 pb-6">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+          {/* Main Content Pane */}
+          <section className="space-y-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between border-b border-border/60 pb-5">
               <div>
-                <p className="eyebrow-text text-primary flex items-center gap-2">
-                  <span>{document.category}</span> / <span>{googleEmbedUrl ? 'Google Drive Embedded' : document.sourceType === 'link' ? 'Drive Link' : (document.fileType ?? 'File').toUpperCase()}</span>
+                <p className="text-xs text-muted-foreground font-medium">
+                  {document.category} / {googleEmbedUrl ? 'Google Drive' : document.sourceType === 'link' ? 'Link' : (document.fileType ?? 'File').toUpperCase()}
                 </p>
-                <h1 className="display-title mt-1.5 text-3xl font-extrabold sm:text-4xl text-foreground leading-tight" data-testid="heading-document-title">
+                <h1 className="mt-1 text-2xl font-bold tracking-tight text-foreground sm:text-3xl" data-testid="heading-document-title">
                   {document.title}
                 </h1>
-                <p className="mt-2 text-xs font-semibold text-muted-foreground">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Updated {formatDate(document.updatedAt, true)}
                 </p>
               </div>
 
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={() => setEditing((value) => !value)} data-testid="button-edit-document">
-                  <Pencil className="h-4 w-4 mr-1.5" /> {editing ? 'Cancel edit' : 'Edit'}
+                  <Pencil className="h-3.5 w-3.5 mr-1" /> {editing ? 'Cancel' : 'Edit'}
                 </Button>
                 <Button variant="outline" size="sm" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => setDeleteOpen(true)} disabled={deleteDocument.isPending} data-testid="button-delete-document">
-                  <Trash2 className="h-4 w-4 mr-1.5" /> Remove
+                  <Trash2 className="h-3.5 w-3.5 mr-1" /> Remove
                 </Button>
               </div>
             </div>
 
             {notice && (
-              <div className="mt-4 flex items-center gap-2 rounded-xl bg-secondary px-4 py-3 text-sm font-medium text-primary" data-testid="status-document-notice">
-                <Check className="h-4 w-4 text-emerald-500" /> {notice}
+              <div className="flex items-center gap-2 rounded-lg bg-muted px-3.5 py-2.5 text-xs font-medium text-foreground" data-testid="status-document-notice">
+                <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> {notice}
               </div>
             )}
 
             {/* Document Preview Box */}
-            <div className="mt-6 flex min-h-[500px] flex-col items-center justify-center overflow-hidden rounded-3xl border border-border/80 bg-card p-4 sm:p-6 shadow-xs">
+            <div className="flex min-h-[480px] flex-col items-center justify-center overflow-hidden rounded-xl border border-border bg-card p-4">
               {googleEmbedUrl ? (
                 <div className="w-full space-y-3">
-                  <div className="flex items-center justify-between rounded-2xl bg-blue-500/10 px-4 py-3 text-xs font-bold text-blue-600 dark:text-blue-400 border border-blue-500/20">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 animate-pulse" />
-                      <span>Live Embedded Google Drive Document</span>
-                    </div>
+                  <div className="flex items-center justify-between rounded-lg bg-muted px-4 py-2.5 text-xs font-medium text-foreground border border-border">
+                    <span>Google Drive Document Preview</span>
                     <a
                       href={document.sourceUrl ?? undefined}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs text-white hover:bg-blue-700 transition-colors shadow-xs"
+                      className="inline-flex items-center gap-1.5 rounded bg-foreground px-2.5 py-1 text-xs font-medium text-background hover:opacity-90 transition-opacity"
                     >
-                      Open in Drive <ExternalLink className="h-3.5 w-3.5" />
+                      Open in Drive <ExternalLink className="h-3 w-3" />
                     </a>
                   </div>
                   <iframe
                     src={googleEmbedUrl}
                     title={`Preview of ${document.title}`}
-                    className="h-[620px] w-full rounded-2xl border border-border/80 bg-background shadow-xs"
+                    className="h-[600px] w-full rounded-lg border border-border bg-background"
                     allow="autoplay; encrypted-media"
                     data-testid="iframe-document-preview"
                   />
                 </div>
               ) : document.sourceType === 'link' && document.sourceUrl ? (
-                <div className="w-full max-w-md rounded-2xl border border-border bg-background p-8 text-center shadow-xs" data-testid="empty-document-preview">
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary text-primary">
-                    <Link2 className="h-8 w-8" />
+                <div className="w-full max-w-sm rounded-xl border border-border bg-background p-6 text-center" data-testid="empty-document-preview">
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-muted text-foreground">
+                    <Link2 className="h-6 w-6" />
                   </div>
-                  <h3 className="display-title mt-5 text-xl font-bold text-foreground">External Web Link</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    This file is stored on an external cloud location.
+                  <h3 className="mt-4 text-base font-bold text-foreground">External Web Link</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    This file is stored on an external cloud service or webpage.
                   </p>
                   <a
                     href={document.sourceUrl ?? undefined}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-6 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"
+                    className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-foreground px-4 py-2 text-xs font-semibold text-background hover:opacity-90 transition-opacity"
                   >
-                    Open Link <ExternalLink className="h-4 w-4" />
+                    Open link <ExternalLink className="h-3.5 w-3.5" />
                   </a>
                 </div>
               ) : document.objectPath && document.fileType === 'pdf' ? (
                 <iframe
                   src={`/api/storage${document.objectPath}`}
                   title={`Preview of ${document.title}`}
-                  className="h-[620px] w-full rounded-2xl border border-border bg-background"
+                  className="h-[600px] w-full rounded-lg border border-border bg-background"
                   data-testid="iframe-document-preview"
                 />
               ) : document.objectPath && document.fileType && ['jpg', 'png', 'webp'].includes(document.fileType) ? (
                 <img
                   src={`/api/storage${document.objectPath}`}
                   alt={`Preview of ${document.title}`}
-                  className="max-h-[600px] max-w-full rounded-2xl object-contain shadow-md"
+                  className="max-h-[580px] max-w-full rounded-lg object-contain"
                   data-testid="img-document-preview"
                 />
               ) : (
-                <div className="w-full max-w-md rounded-2xl border border-border bg-background p-8 text-center shadow-xs" data-testid="empty-document-preview">
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary text-primary">
-                    {document.fileType === 'pdf' ? <FileText className="h-8 w-8" /> : <FileImage className="h-8 w-8" />}
+                <div className="w-full max-w-sm rounded-xl border border-border bg-background p-6 text-center" data-testid="empty-document-preview">
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                    {document.fileType === 'pdf' ? <FileText className="h-6 w-6" /> : <FileImage className="h-6 w-6" />}
                   </div>
-                  <h3 className="display-title mt-5 text-xl font-bold text-foreground">Private Vault File</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    Stored privately in your vault and protected by authenticated access.
+                  <h3 className="mt-4 text-base font-bold text-foreground">Vault File</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Stored securely in your Haven vault.
                   </p>
                 </div>
               )}
@@ -199,72 +196,71 @@ export default function DocumentDetail() {
             <DeleteConfirmDialog open={deleteOpen} onOpenChange={setDeleteOpen} onConfirm={remove} isPending={deleteDocument.isPending} title={document.title} sourceType={document.sourceType} />
           </section>
 
-          {/* Right Sidebar Details Pane */}
+          {/* Right Details Sidebar */}
           <aside className="space-y-6">
             {editing ? (
-              <form className="vault-card-surface rounded-2xl p-6" onSubmit={save} data-testid="form-edit-document">
-                <div className="mb-4 flex items-center justify-between">
-                  <h2 className="display-title text-lg text-foreground">Edit Metadata</h2>
-                  <Save className="h-4 w-4 text-accent" />
+              <form className="vault-card-surface rounded-xl p-5 border border-border bg-card" onSubmit={save} data-testid="form-edit-document">
+                <div className="mb-4 flex items-center justify-between border-b border-border/60 pb-3">
+                  <h2 className="text-sm font-bold text-foreground">Edit Details</h2>
+                  <Save className="h-4 w-4 text-muted-foreground" />
                 </div>
-                <div className="space-y-4">
-                  <label className="block space-y-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <div className="space-y-3.5">
+                  <label className="block space-y-1 text-xs font-medium text-muted-foreground">
                     Title
-                    <Input data-testid="input-edit-title" value={title} onChange={(event) => setTitle(event.target.value)} required />
+                    <Input className="text-xs" data-testid="input-edit-title" value={title} onChange={(event) => setTitle(event.target.value)} required />
                   </label>
-                  <label className="block space-y-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  <label className="block space-y-1 text-xs font-medium text-muted-foreground">
                     Category
-                    <Input data-testid="input-edit-category" value={category} onChange={(event) => setCategory(event.target.value)} required />
+                    <Input className="text-xs" data-testid="input-edit-category" value={category} onChange={(event) => setCategory(event.target.value)} required />
                   </label>
-                  <label className="block space-y-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  <label className="block space-y-1 text-xs font-medium text-muted-foreground">
                     Tags <span className="font-normal text-muted-foreground">(comma separated)</span>
-                    <Input data-testid="input-edit-tags" value={tags} onChange={(event) => setTags(event.target.value)} />
+                    <Input className="text-xs" data-testid="input-edit-tags" value={tags} onChange={(event) => setTags(event.target.value)} />
                   </label>
-                  <label className="block space-y-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  <label className="block space-y-1 text-xs font-medium text-muted-foreground">
                     Notes
-                    <Textarea data-testid="input-edit-notes" value={notes} onChange={(event) => setNotes(event.target.value)} className="min-h-[100px]" />
+                    <Textarea className="min-h-[90px] text-xs resize-none" data-testid="input-edit-notes" value={notes} onChange={(event) => setNotes(event.target.value)} />
                   </label>
-                  <Button className="w-full" type="submit" disabled={updateDocument.isPending} data-testid="button-save-edit">
+                  <Button className="w-full text-xs font-semibold" size="sm" type="submit" disabled={updateDocument.isPending} data-testid="button-save-edit">
                     {updateDocument.isPending ? 'Saving…' : 'Save changes'}
                   </Button>
                 </div>
               </form>
             ) : (
-              <section className="vault-card-surface rounded-2xl p-6" data-testid="panel-document-details">
-                <div className="mb-4 flex items-center justify-between border-b border-border/60 pb-3">
-                  <h2 className="display-title text-lg text-foreground">Document Context</h2>
-                  <span className="eyebrow-text text-muted-foreground">Info</span>
+              <section className="vault-card-surface rounded-xl p-5 border border-border bg-card" data-testid="panel-document-details">
+                <div className="mb-4 border-b border-border/60 pb-3">
+                  <h2 className="text-sm font-bold text-foreground">Document Details</h2>
                 </div>
-                <dl className="space-y-4 text-sm">
+                <dl className="space-y-3 text-xs">
                   <div className="flex items-center justify-between">
-                    <dt className="text-muted-foreground text-xs font-semibold">Source Type</dt>
-                    <dd className="font-mono text-xs font-bold text-foreground capitalize">{document.sourceType}</dd>
+                    <dt className="text-muted-foreground">Source</dt>
+                    <dd className="font-medium text-foreground capitalize">{document.sourceType}</dd>
                   </div>
                   {!isLink && document.sizeBytes && (
                     <div className="flex items-center justify-between">
-                      <dt className="text-muted-foreground text-xs font-semibold">File Size</dt>
-                      <dd className="font-mono text-xs font-bold text-foreground">{formatBytes(document.sizeBytes)}</dd>
+                      <dt className="text-muted-foreground">File size</dt>
+                      <dd className="font-mono text-foreground">{formatBytes(document.sizeBytes)}</dd>
                     </div>
                   )}
                   <div className="flex items-center justify-between">
-                    <dt className="text-muted-foreground text-xs font-semibold">Added On</dt>
-                    <dd className="text-xs font-semibold text-foreground">{formatDate(document.uploadedAt)}</dd>
+                    <dt className="text-muted-foreground">Added</dt>
+                    <dd className="font-medium text-foreground">{formatDate(document.uploadedAt)}</dd>
                   </div>
                   <div className="flex items-center justify-between">
-                    <dt className="text-muted-foreground text-xs font-semibold">Last Modified</dt>
-                    <dd className="text-xs font-semibold text-foreground">{formatDate(document.updatedAt)}</dd>
+                    <dt className="text-muted-foreground">Last modified</dt>
+                    <dd className="font-medium text-foreground">{formatDate(document.updatedAt)}</dd>
                   </div>
                   <div className="flex items-center justify-between">
-                    <dt className="text-muted-foreground text-xs font-semibold">Status</dt>
-                    <dd className="flex items-center gap-1.5 text-xs font-bold text-emerald-500" data-testid="status-document">
-                      <span className="h-2 w-2 rounded-full bg-emerald-500" /> {document.status}
+                    <dt className="text-muted-foreground">Status</dt>
+                    <dd className="flex items-center gap-1.5 font-medium text-emerald-600 dark:text-emerald-400" data-testid="status-document">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400" /> {document.status}
                     </dd>
                   </div>
                 </dl>
                 {document.notes && (
-                  <div className="mt-5 border-t border-border/60 pt-4">
-                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Notes</p>
-                    <p className="mt-1.5 text-xs leading-relaxed text-foreground bg-muted/50 p-3 rounded-xl">{document.notes}</p>
+                  <div className="mt-4 border-t border-border/60 pt-3">
+                    <p className="text-xs font-medium text-muted-foreground">Notes</p>
+                    <p className="mt-1 text-xs text-foreground bg-muted/50 p-2.5 rounded-lg leading-relaxed">{document.notes}</p>
                   </div>
                 )}
               </section>

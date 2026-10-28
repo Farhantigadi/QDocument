@@ -223,31 +223,85 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── THREE PILLARS ── */}
+      {/* ── FOUR PILLARS ── */}
       <section style={{ borderTop: `1px solid ${border}`, padding: '96px 20px' }}>
         <div style={{ maxWidth: 960, margin: '0 auto' }}>
           <Reveal>
             <p style={{ textAlign: 'center', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: fgMuted, marginBottom: 56 }}>
-              What Haven does
+              Built for complete digital control
             </p>
           </Reveal>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 1, background: gridLine, borderRadius: 20, overflow: 'hidden' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 1, background: gridLine, borderRadius: 20, overflow: 'hidden' }}>
             {[
-              { n: '01', title: 'Document Vault', body: 'Passports, leases, insurance, certificates. Link Google Drive files or paste any URL. Organised by category, found in seconds.' },
-              { n: '02', title: 'Password Manager', body: 'Save credentials encrypted at rest. Passwords stay hidden by default - revealed only when you ask.' },
-              { n: '03', title: 'Zero-knowledge', body: 'Your data is encrypted with a key only your session holds. We store ciphertext. Nothing is readable without you.' },
+              { n: '01', title: 'Document Vault', body: 'Passports, leases, tax forms, insurance. Link Google Drive files or paste any URL. Categorised automatically, retrieved in seconds.' },
+              { n: '02', title: 'Password Manager', body: 'Store account credentials with AES-256 encryption. Passwords remain hidden by default — revealed only on your command.' },
+              { n: '03', title: 'Revocable Share Links', body: 'Send temporary access links to landlords, banks, or family. Set optional expiry timers or cut off access instantly in one tap.' },
+              { n: '04', title: 'Zero-Knowledge Security', body: 'Your vault is scrambled locally with session-derived keys. We store ciphertext — your files remain completely unreadable to anyone else.' },
             ].map((p, i) => (
               <Reveal key={p.n} delay={i * 80}>
-                <div style={{ background: cardBg, padding: '36px 32px 40px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div style={{ background: cardBg, padding: '32px 28px 36px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 11, fontWeight: 500, color: fgDim, letterSpacing: '0.06em' }}>{p.n}</span>
-                  <div style={{ marginTop: 48 }}>
-                    <h3 style={{ fontSize: 19, fontWeight: 600, letterSpacing: '-0.025em', color: fg, lineHeight: 1.2 }}>{p.title}</h3>
-                    <p style={{ marginTop: 10, fontSize: 14, lineHeight: 1.7, color: fgMuted }}>{p.body}</p>
+                  <div style={{ marginTop: 40 }}>
+                    <h3 style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-0.025em', color: fg, lineHeight: 1.25 }}>{p.title}</h3>
+                    <p style={{ marginTop: 10, fontSize: 13.5, lineHeight: 1.65, color: fgMuted }}>{p.body}</p>
                   </div>
                 </div>
               </Reveal>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── SHARE LINKS SPOTLIGHT (UNIQUE FEATURE) ── */}
+      <section style={{ borderTop: `1px solid ${border}`, padding: '96px 20px' }}>
+        <div style={{ maxWidth: 960, margin: '0 auto', display: 'grid', gap: 56, gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', alignItems: 'center' }}>
+          <Reveal>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 999, border: `1px solid ${pillBorder}`, background: tagBg, padding: '4px 12px', fontSize: 11, fontWeight: 600, color: fg, letterSpacing: '-0.01em', marginBottom: 16 }}>
+              <span>Unique Feature</span> · <span>Temporary Share Links</span>
+            </div>
+            <h2 style={{ fontSize: 'clamp(26px, 3.5vw, 40px)', fontWeight: 700, letterSpacing: '-0.035em', lineHeight: 1.08, color: fg }}>
+              Share documents on your terms. Revoke access anytime.
+            </h2>
+            <p style={{ marginTop: 16, fontSize: 15, lineHeight: 1.75, color: fgMuted }}>
+              Stop emailing sensitive PDF attachments that sit in external inboxes forever. With Haven, you create clean, self-destructing share links with custom expiration timers.
+            </p>
+            <p style={{ marginTop: 12, fontSize: 15, lineHeight: 1.75, color: fgMuted }}>
+              When the transaction is done, hit <strong>Revoke</strong> — the link instantly invalidates, and recipients get a clean "Access Revoked" notice.
+            </p>
+            <div style={{ marginTop: 24, display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: fg, fontWeight: 500 }}>
+                <ShieldCheck style={{ width: 16, height: 16 }} /> One-tap revocation
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: fg, fontWeight: 500 }}>
+                <Lock style={{ width: 16, height: 16 }} /> Expiry countdowns
+              </div>
+            </div>
+          </Reveal>
+
+          <Reveal delay={100}>
+            <div style={{ borderRadius: 18, border: `1px solid ${border}`, background: cardBg, padding: '24px', boxShadow: dk ? '0 12px 32px rgba(0,0,0,0.5)' : '0 8px 24px rgba(0,0,0,0.06)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${border}`, paddingBottom: 14, marginBottom: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#28c840' }} />
+                  <span style={{ fontSize: 13, fontWeight: 600, color: fg }}>Active Share Link</span>
+                </div>
+                <span style={{ fontSize: 11, fontFamily: 'DM Mono, monospace', color: fgMuted }}>haven.app/s/a8f3b2…</span>
+              </div>
+              <div className="space-y-3">
+                <div style={{ background: bgAlt, borderRadius: 12, padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: fg }}>Apartment_Lease_2026.pdf</p>
+                    <p style={{ fontSize: 11, color: fgMuted, marginTop: 2 }}>Shared with Landlord · Expires in 3 days</p>
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: '#ff5f57', background: 'rgba(255,95,87,0.1)', padding: '4px 10px', borderRadius: 8, cursor: 'default' }}>Revoke link</span>
+                </div>
+                <div style={{ marginTop: 12, background: 'rgba(255,95,87,0.06)', border: '1px solid rgba(255,95,87,0.2)', borderRadius: 12, padding: '12px 14px' }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: '#ff5f57' }}>When revoked by owner:</p>
+                  <p style={{ fontSize: 11, color: fgMuted, marginTop: 2 }}>Recipient sees: "Access Revoked — This link was ended by the owner."</p>
+                </div>
+              </div>
+            </div>
+          </Reveal>
         </div>
       </section>
 
