@@ -52,7 +52,26 @@ const pinoHttpOptions: PinoHttpOptions = {
   },
 };
 app.use(pinoHttpFn(pinoHttpOptions));
-app.use(cors({ credentials: true, origin: true }));
+const ALLOWED_ORIGINS = [
+  "https://havensecure.vercel.app",
+  // allow any Vercel preview deployments
+  /\.vercel\.app$/,
+  // local dev
+  "http://localhost:5173",
+  "http://localhost:3000",
+];
+
+app.use(cors({
+  credentials: true,
+  origin: (origin, cb) => {
+    // allow server-to-server (no origin) and matched origins
+    if (!origin) return cb(null, true);
+    const allowed = ALLOWED_ORIGINS.some((o) =>
+      typeof o === "string" ? o === origin : o.test(origin)
+    );
+    cb(allowed ? null : new Error("Not allowed by CORS"), allowed);
+  },
+}));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

@@ -3,5 +3,11 @@
   "buildCommand": "node build-vercel.mjs",
   "outputDirectory": ".vercel/output",
   "framework": null,
-  "ignoreCommand": "exit 1"
+  "ignoreCommand": "exit 1",
+  "crons": [
+    {
+      "path": "/api/cron/keep-alive",
+      "schedule": "0 0 */4 * *"
+    }
+  ]
 }

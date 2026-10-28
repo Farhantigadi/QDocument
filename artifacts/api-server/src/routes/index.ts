@@ -8,10 +8,12 @@ import storageRouter from "./storage";
 import vaultRouter from "./vault";
 import feedbackRouter from "./feedback";
 import shareRouter from "./share";
+import cronRouter from "./cron";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(cronRouter);
 router.use(authRouter);
 router.use(documentsRouter);
 router.use(dashboardRouter);
